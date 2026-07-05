@@ -1,0 +1,6 @@
+nodes,total_runtime_sec,avg_heartbeat_ms,avg_round_time_sec,total_heartbeats,cpu_percent,peak_memory_mb
+1,5.88,10.17,1.0,3,6.9,310.8
+3,5.55,36.18,0.79,6,6.8,313.8
+5,5.83,30.51,0.79,10,5.6,316.9
+10,6.78,47.17,0.85,30,7.8,323.4
+20,8.07,63.78,0.93,60,7.5,336.9

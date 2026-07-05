@@ -1,0 +1,5 @@
+configuration,total_round_ms,aggregation_ms,secagg_ms,dp_ms,payload_bytes,cpu_percent,peak_memory_mb
+A,4.744,0.852,0.0,0.0,2000000,0.0,38.3
+B,11.673,2.942,4.831,0.0,2000000,12.18,41.4
+C,6.142,0.81,0.0,2.358,2000000,0.0,38.5
+D,16.504,3.305,4.612,4.778,2000000,18.15,42.2

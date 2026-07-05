@@ -1,0 +1,129 @@
+# Benchmark 8: Comparative Evaluation Against a Baseline Federated Learning System
+
+You are helping me evaluate my federated learning platform called **Conclave**.
+
+## Objective
+
+Compare Conclave against a baseline federated learning implementation without advanced security or auditing features.
+
+The goal is to quantify the performance overhead introduced by Conclave's security architecture and demonstrate the benefits it provides.
+
+---
+
+## Baseline System
+
+Implement or simulate a minimal federated learning system with:
+
+* Plain HTTP communication
+* FedAvg aggregation
+* No mTLS
+* No Secure Aggregation
+* No Differential Privacy
+* No Audit Ledger
+* No Policy Engine
+* No Metrics Collection
+
+---
+
+## Conclave Configuration
+
+Use the same experiment with:
+
+* mTLS enabled
+* Secure Aggregation enabled
+* Differential Privacy enabled
+* Audit Ledger enabled
+* Metrics collection enabled
+* Policy enforcement enabled
+
+---
+
+## Test Configuration
+
+Run both systems using:
+
+* 5 simulated hospital nodes
+* 5 federated learning rounds
+* 100,000 model parameters
+
+Repeat each benchmark 5 times.
+
+---
+
+## Metrics to Collect
+
+For each system measure:
+
+* Total runtime (seconds)
+* Average FL round duration (seconds)
+* Average aggregation time (ms)
+* Heartbeat latency (ms)
+* CPU utilization (%)
+* Peak memory usage (MB)
+* Network payload size (KB)
+* Total audit events (Conclave only)
+
+---
+
+## Security Feature Comparison
+
+Create a comparison table showing whether each platform supports:
+
+* Mutual TLS
+* Secure Aggregation
+* Differential Privacy
+* Audit Logging
+* Policy Enforcement
+* Metrics Monitoring
+* Certificate-based Authentication
+* Tamper Detection
+
+---
+
+## Output
+
+Generate:
+
+results/
+baseline_comparison.csv
+
+Columns:
+
+* system
+* runtime_sec
+* round_time_sec
+* aggregation_ms
+* heartbeat_ms
+* cpu_percent
+* peak_memory_mb
+* payload_kb
+
+---
+
+## Visualization
+
+Generate publication-quality figures:
+
+1. Baseline vs Conclave Runtime
+2. Baseline vs Conclave CPU Usage
+3. Baseline vs Conclave Memory Usage
+4. Baseline vs Conclave Network Payload
+
+Save as:
+
+* PNG (300 DPI)
+* SVG
+* PDF
+
+---
+
+## Deliverables
+
+1. Explain the comparison methodology.
+2. Implement the benchmark.
+3. Explain how to execute it.
+4. Generate the CSV.
+5. Generate all comparison figures.
+6. Generate the security feature comparison table.
+7. Summarize the trade-offs between the baseline system and Conclave.
+8. Wait for my confirmation before proceeding.

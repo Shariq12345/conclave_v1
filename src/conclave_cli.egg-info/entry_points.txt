@@ -1,0 +1,3 @@
+[console_scripts]
+conclave = conclave.cli.main:app
+conclave-server = conclave.server.main:start

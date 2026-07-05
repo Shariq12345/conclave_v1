@@ -1,0 +1,6 @@
+chain_size,append_time_ms,append_logs_per_sec,verification_ms,verification_logs_per_sec,peak_memory_mb,tampering_detected,corruption_detection_ms
+500,2.9,172944.4,0.996,502670.3,37.7,True,0.373
+5000,29.942,167173.9,10.361,482745.0,40.1,True,4.535
+10000,67.824,152641.4,22.067,462389.8,42.8,True,7.76
+25000,152.289,164256.0,52.457,477404.5,51.2,True,23.496
+50000,312.397,160170.7,107.581,465800.1,65.4,True,59.926
