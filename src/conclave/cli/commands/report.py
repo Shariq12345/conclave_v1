@@ -60,6 +60,8 @@ def generate_report(
         
         summary = report.get("summary", {})
         for k, v in summary.items():
+            if k.startswith("_"):
+                continue
             metric_name = k.replace("_", " ").title()
             if isinstance(v, dict):
                 v_str = ", ".join(f"{dk}: {dv}" for dk, dv in v.items())

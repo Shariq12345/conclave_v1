@@ -208,13 +208,45 @@ class ReportingService:
             violations = sum(1 for e in events if "policy_violation" in e.event_type.lower() or "violation" in e.event_type.lower())
             validation_failures = sum(1 for e in events if "orchestrator_validation" in e.event_type.lower() and e.status.lower() == "failure")
 
+            # Run HIPAA, GDPR, and DPDP audits dynamically
+            hipaa = self.registry.compliance_service.audit_hipaa()
+            gdpr = self.registry.compliance_service.audit_gdpr()
+            dpdp = self.registry.compliance_service.audit_dpdp()
+
+            compliance_checks = []
+            for check in hipaa["checks"]:
+                compliance_checks.append({
+                    "framework": "HIPAA",
+                    "ref": check["safeguard"],
+                    "name": check["name"],
+                    "status": "PASS" if check["passed"] else "FAIL"
+                })
+            for check in gdpr["checks"]:
+                compliance_checks.append({
+                    "framework": "GDPR",
+                    "ref": check["safeguard"],
+                    "name": check["name"],
+                    "status": "PASS" if check["passed"] else "FAIL"
+                })
+            for check in dpdp["checks"]:
+                compliance_checks.append({
+                    "framework": "DPDP",
+                    "ref": check["safeguard"],
+                    "name": check["name"],
+                    "status": "PASS" if check["passed"] else "FAIL"
+                })
+
             summary = {
                 "total_governance_policies": len(policies),
                 "active_policies": sum(1 for p in policies if p.status == "Enabled"),
                 "total_data_consents": len(consents),
                 "active_consents": sum(1 for c in consents if c.status == "Granted"),
                 "policy_violations_recorded": violations,
-                "governance_check_failures": validation_failures
+                "governance_check_failures": validation_failures,
+                "hipaa_compliance_readiness_score": f"{hipaa['readiness_score']}%",
+                "gdpr_compliance_readiness_score": f"{gdpr['readiness_score']}%",
+                "dpdp_compliance_readiness_score": f"{dpdp['readiness_score']}%",
+                "_compliance_checks": compliance_checks
             }
             detailed_data = [{
                 "id": p.id[:8],
@@ -315,6 +347,8 @@ class ReportingService:
             
             writer.writerow(["--- Executive Summary ---"])
             for k, v in report.summary.items():
+                if k.startswith("_"):
+                    continue
                 writer.writerow([k.replace('_', ' ').title(), v])
             writer.writerow([])
             
@@ -415,6 +449,8 @@ class ReportingService:
             story.append(Paragraph("Executive Summary", section_style))
             summary_data = []
             for k, v in report.summary.items():
+                if k.startswith("_"):
+                    continue
                 val_str = str(v)
                 if isinstance(v, dict):
                     val_str = ", ".join(f"{dk}: {dv}" for dk, dv in v.items())
@@ -468,6 +504,44 @@ class ReportingService:
                     
                 detail_table.setStyle(TableStyle(t_style))
                 story.append(detail_table)
+                
+            # If governance compliance report has regulatory checklist checks, append a second table
+            compliance_checks = report.summary.get("_compliance_checks")
+            if compliance_checks:
+                story.append(Spacer(1, 15))
+                story.append(Paragraph("Regulatory Compliance Audits", section_style))
+                
+                headers = ["Framework", "Regulation Ref", "Audit Check Name", "Status"]
+                table_content = [[Paragraph(h, th_style) for h in headers]]
+                
+                for check in compliance_checks:
+                    status_val = check["status"]
+                    status_color = "#22c55e" if status_val == "PASS" else "#ef4444"
+                    status_p = Paragraph(f"<font color='{status_color}'><b>{status_val}</b></font>", td_style)
+                    table_content.append([
+                        Paragraph(check["framework"], td_style),
+                        Paragraph(check["ref"], td_style),
+                        Paragraph(check["name"], td_style),
+                        status_p
+                    ])
+                
+                col_widths = [1.2 * inch, 1.5 * inch, 3.7 * inch, 1.0 * inch]
+                compliance_table = Table(table_content, colWidths=col_widths, repeatRows=1)
+                
+                t_style = [
+                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e293b")),
+                    ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('TOPPADDING', (0,0), (-1,-1), 4),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#e2e8f0")),
+                ]
+                for idx in range(1, len(table_content)):
+                    bg = colors.white if idx % 2 == 1 else colors.HexColor("#f1f5f9")
+                    t_style.append(('BACKGROUND', (0, idx), (-1, idx), bg))
+                    
+                compliance_table.setStyle(TableStyle(t_style))
+                story.append(compliance_table)
                 
             doc.build(story)
             pdf_bytes = buffer.getvalue()
