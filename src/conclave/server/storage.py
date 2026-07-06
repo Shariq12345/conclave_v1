@@ -508,6 +508,15 @@ class SQLiteUserRepository(UserRepository):
                 orm_user.password_hash = user.password_hash
                 orm_user.last_login = user.last_login
                 orm_user.updated_at = user.updated_at
+                
+                # Copy new security fields
+                orm_user.email_verified = 1 if user.email_verified else 0
+                orm_user.email_verification_token = user.email_verification_token
+                orm_user.password_reset_token = user.password_reset_token
+                orm_user.password_reset_expires = user.password_reset_expires
+                orm_user.mfa_enabled = 1 if user.mfa_enabled else 0
+                orm_user.mfa_secret = user.mfa_secret
+                orm_user.mfa_backup_codes = user.mfa_backup_codes
             else:
                 orm_user = UserORM.from_domain(user)
                 session.add(orm_user)

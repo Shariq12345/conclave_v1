@@ -928,6 +928,8 @@ class UserService:
             )
             raise DuplicateUserError(f"User email '{email}' already exists.")
 
+        import os
+        import uuid
         password_hash = None
         if password:
             from conclave.server.security import hash_password
@@ -943,7 +945,9 @@ class UserService:
             email=email,
             full_name=full_name,
             role=role,
-            password_hash=password_hash
+            password_hash=password_hash,
+            email_verified=True if (os.getenv("TESTING") == "true" or os.getenv("BYPASS_AUTH") == "true") else False,
+            email_verification_token=None if (os.getenv("TESTING") == "true" or os.getenv("BYPASS_AUTH") == "true") else str(uuid.uuid4())
         )
         saved = self.repository.save(user)
 
@@ -955,6 +959,23 @@ class UserService:
             status="Success",
             message=f"User '{saved.username}' registered successfully under organization '{org.name}'."
         )
+
+        # Trigger email verification if token is generated
+        if saved.email_verification_token:
+            from conclave.server.security import send_resend_email
+            host = os.getenv("CONCLAVE_SERVER_HOST", "127.0.0.1")
+            port = os.getenv("CONCLAVE_SERVER_PORT", "8000")
+            verify_url = f"http://{host}:{port}/auth/verify-email?token={saved.email_verification_token}"
+            
+            subject = "Verify your Conclave Account"
+            html_content = f"""
+            <h3>Welcome to Conclave, {full_name}!</h3>
+            <p>Please verify your email address by clicking the link below:</p>
+            <p><a href="{verify_url}">{verify_url}</a></p>
+            <p>If you did not register this account, please ignore this email.</p>
+            """
+            send_resend_email(email, subject, html_content)
+
         return saved
 
     def list_users(self) -> List[User]:
@@ -1070,6 +1091,217 @@ class UserService:
             )
         return success
 
+    def verify_email(self, token: str) -> bool:
+        """Verify user email address using the registration token."""
+        users = self.repository.find_all()
+        for u in users:
+            if u.email_verification_token == token:
+                u.email_verified = True
+                u.email_verification_token = None
+                self.repository.save(u)
+                
+                self.audit_service.log_event(
+                    event_type="USER_EMAIL_VERIFIED",
+                    resource_type="User",
+                    resource_name=u.username,
+                    action="verify_email",
+                    status="Success",
+                    message=f"User '{u.username}' email successfully verified."
+                )
+                return True
+        return False
+
+    def request_password_reset(self, username_or_email: str) -> bool:
+        """Generates reset token and transmits forgot password notification via Resend API."""
+        user = self.repository.find_by_username(username_or_email)
+        if not user:
+            user = self.repository.find_by_email(username_or_email)
+        if not user:
+            return False
+
+        import uuid
+        from datetime import datetime, timedelta
+        token = str(uuid.uuid4())
+        user.password_reset_token = token
+        user.password_reset_expires = datetime.now() + timedelta(hours=1)
+        self.repository.save(user)
+
+        self.audit_service.log_event(
+            event_type="PASSWORD_RESET_REQUESTED",
+            resource_type="User",
+            resource_name=user.username,
+            action="request_reset",
+            status="Success",
+            message=f"Password reset token generated for user '{user.username}'."
+        )
+
+        from conclave.server.security import send_resend_email
+        import os
+        host = os.getenv("CONCLAVE_SERVER_HOST", "127.0.0.1")
+        port = os.getenv("CONCLAVE_SERVER_PORT", "8000")
+        reset_url = f"http://{host}:{port}/auth/reset-password?token={token}"
+        
+        subject = "Reset your Conclave Password"
+        html_content = f"""
+        <h3>Password Reset Request</h3>
+        <p>You requested to reset your password. Please click the link below to set a new password:</p>
+        <p><a href="{reset_url}">{reset_url}</a></p>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you did not request this, please ignore this email.</p>
+        """
+        send_resend_email(user.email, subject, html_content)
+        return True
+
+    def reset_password(self, token: str, new_password: str) -> bool:
+        """Applies password resets when presented with a valid reset token."""
+        from datetime import datetime
+        users = self.repository.find_all()
+        for u in users:
+            if u.password_reset_token == token:
+                if u.password_reset_expires and u.password_reset_expires < datetime.now():
+                    self.audit_service.log_event(
+                        event_type="PASSWORD_RESET_FAILED",
+                        resource_type="User",
+                        resource_name=u.username,
+                        action="reset_password",
+                        status="Failure",
+                        message="Password reset token expired."
+                    )
+                    raise ValueError("Password reset token expired.")
+
+                from conclave.server.security import hash_password
+                u.password_hash = hash_password(new_password)
+                u.password_reset_token = None
+                u.password_reset_expires = None
+                self.repository.save(u)
+
+                self.audit_service.log_event(
+                    event_type="PASSWORD_RESET",
+                    resource_type="User",
+                    resource_name=u.username,
+                    action="reset_password",
+                    status="Success",
+                    message=f"Password for user '{u.username}' successfully reset."
+                )
+                return True
+        return False
+
+    def setup_mfa(self, username: str) -> dict:
+        """Initializes MFA registration for a user, returning a secret and provisioning URI."""
+        user = self.get_user(username)
+        from conclave.server.security import generate_mfa_secret
+        secret = generate_mfa_secret()
+        uri = f"otpauth://totp/Conclave:{user.username}?secret={secret}&issuer=Conclave"
+        
+        self.audit_service.log_event(
+            event_type="MFA_SETUP_INITIATED",
+            resource_type="User",
+            resource_name=user.username,
+            action="setup_mfa",
+            status="Success",
+            message=f"User '{user.username}' initiated MFA setup."
+        )
+        return {"secret": secret, "otpauth_uri": uri}
+
+    def confirm_mfa(self, username: str, secret: str, code: str) -> list | None:
+        """Confirms and activates user MFA using a verification code, generating backup codes."""
+        user = self.get_user(username)
+        from conclave.server.security import verify_totp_token
+        if not verify_totp_token(secret, code):
+            self.audit_service.log_event(
+                event_type="MFA_CONFIRMATION_FAILED",
+                resource_type="User",
+                resource_name=user.username,
+                action="confirm_mfa",
+                status="Failure",
+                message="Invalid verification code provided for MFA confirmation."
+            )
+            return None
+
+        # Generate 5 backup codes
+        import uuid
+        backup_codes = [str(uuid.uuid4())[:8].upper() for _ in range(5)]
+        
+        user.mfa_enabled = True
+        user.mfa_secret = secret
+        user.mfa_backup_codes = ",".join(backup_codes)
+        self.repository.save(user)
+
+        self.audit_service.log_event(
+            event_type="MFA_ENABLED",
+            resource_type="User",
+            resource_name=user.username,
+            action="confirm_mfa",
+            status="Success",
+            message=f"MFA successfully enabled for user '{user.username}'."
+        )
+        return backup_codes
+
+    def disable_mfa(self, username: str, code: str) -> bool:
+        """Disables user MFA validation using a verification code."""
+        user = self.get_user(username)
+        if not user.mfa_enabled:
+            return True
+
+        from conclave.server.security import verify_totp_token
+        if not verify_totp_token(user.mfa_secret, code):
+            self.audit_service.log_event(
+                event_type="MFA_DISABLE_FAILED",
+                resource_type="User",
+                resource_name=user.username,
+                action="disable_mfa",
+                status="Failure",
+                message="Invalid verification code provided to disable MFA."
+            )
+            return False
+
+        user.mfa_enabled = False
+        user.mfa_secret = None
+        user.mfa_backup_codes = None
+        self.repository.save(user)
+
+        self.audit_service.log_event(
+            event_type="MFA_DISABLED",
+            resource_type="User",
+            resource_name=user.username,
+            action="disable_mfa",
+            status="Success",
+            message=f"MFA disabled for user '{user.username}'."
+        )
+        return True
+
+    def login_mfa(self, username: str, code: str) -> bool:
+        """Validates login MFA code against user's TOTP secret or backup codes."""
+        user = self.get_user(username)
+        if not user.mfa_enabled:
+            return True
+
+        # Try TOTP verification
+        from conclave.server.security import verify_totp_token
+        if verify_totp_token(user.mfa_secret, code):
+            return True
+
+        # Try backup code verification
+        if user.mfa_backup_codes:
+            codes = user.mfa_backup_codes.split(",")
+            clean_code = code.strip().upper()
+            if clean_code in codes:
+                codes.remove(clean_code)
+                user.mfa_backup_codes = ",".join(codes)
+                self.repository.save(user)
+                
+                self.audit_service.log_event(
+                    event_type="MFA_BACKUP_CODE_USED",
+                    resource_type="User",
+                    resource_name=user.username,
+                    action="login_mfa",
+                    status="Success",
+                    message=f"User '{user.username}' authenticated using an MFA backup code."
+                )
+                return True
+                
+        return False
+
 class AuthService:
     def __init__(self, user_service: UserService, audit_service: AuditService):
         self.user_service = user_service
@@ -1133,9 +1365,37 @@ class AuthService:
             )
             raise InvalidCredentialsError("Invalid credentials.")
 
+        import os
+        is_testing = os.getenv("TESTING") == "true" or os.getenv("BYPASS_AUTH") == "true"
+        
+        # Check email verification
+        if not is_testing and not user.email_verified:
+            self.audit_service.log_event(
+                event_type="USER_LOGIN_FAILED",
+                resource_type="User",
+                resource_name=user.username,
+                action="login",
+                status="Failure",
+                message=f"User '{user.username}' email address is not verified."
+            )
+            raise AuthenticationError("Email not verified. Please verify your email first.")
+
         from datetime import datetime
         user.last_login = datetime.now()
         self.user_service.repository.save(user)
+
+        # If MFA is enabled, return a temporary token for the second factor challenge
+        if not is_testing and user.mfa_enabled:
+            mfa_token = create_access_token({
+                "pending_mfa_user": user.username,
+                "sub": user.username,
+                "type": "mfa_challenge"
+            }, expires_delta_seconds=300)
+            return {
+                "pending_mfa": True,
+                "mfa_token": mfa_token,
+                "message": "Multi-Factor Authentication code required."
+            }
 
         token = create_access_token({
             "sub": user.username,
@@ -1219,6 +1479,12 @@ class OnboardingService:
 
         # Create the admin user directly (bypasses org lookup by name; we already have the org)
         from datetime import datetime
+        import os
+        import uuid
+        is_testing = os.getenv("TESTING") == "true" or os.getenv("BYPASS_AUTH") == "true"
+        email_verified = True if is_testing else False
+        email_verification_token = None if is_testing else str(uuid.uuid4())
+
         user = User(
             organization_id=org.id,
             username=username,
@@ -1227,8 +1493,26 @@ class OnboardingService:
             status="Active",
             role="Organization Admin",
             password_hash=password_hash,
+            email_verified=email_verified,
+            email_verification_token=email_verification_token
         )
         self.user_service.repository.save(user)
+
+        # Trigger email verification if token is generated
+        if user.email_verification_token:
+            from conclave.server.security import send_resend_email
+            host = os.getenv("CONCLAVE_SERVER_HOST", "127.0.0.1")
+            port = os.getenv("CONCLAVE_SERVER_PORT", "8000")
+            verify_url = f"http://{host}:{port}/auth/verify-email?token={user.email_verification_token}"
+            
+            subject = "Verify your Conclave Account"
+            html_content = f"""
+            <h3>Welcome to Conclave, {full_name}!</h3>
+            <p>Please verify your email address by clicking the link below:</p>
+            <p><a href="{verify_url}">{verify_url}</a></p>
+            <p>If you did not register this account, please ignore this email.</p>
+            """
+            send_resend_email(email, subject, html_content)
 
         self.audit_service.log_event(
             event_type="ONBOARDING_CREATE",
@@ -1526,6 +1810,35 @@ class NodeService:
             action="revoke",
             status="Success",
             message=f"Node '{node_id}' revoked by reviewer '{reviewer}'."
+        )
+        return saved
+
+    def rotate_node_certificate(self, node_id: str, new_public_key: str) -> Node:
+        node = self.get_node(node_id)
+        if node.status in ("Rejected", "Revoked"):
+            raise ValueError(f"Cannot rotate certificate for node with status '{node.status}'.")
+
+        # Generate new signed certificate
+        try:
+            cert_pem = _generate_node_cert(node_id, new_public_key)
+        except Exception as e:
+            raise ValueError(f"Failed to sign new certificate: {e}")
+
+        # Update node public key and certificate
+        node.public_key = new_public_key
+        node.certificate = cert_pem
+        
+        # Save updated node
+        saved = self.node_repository.save(node)
+
+        # Log event
+        self.audit_service.log_event(
+            event_type="NODE_CERT_ROTATED",
+            resource_type="Node",
+            resource_name=saved.hostname,
+            action="rotate_cert",
+            status="Success",
+            message=f"Node '{node_id}' certificate and public key successfully rotated."
         )
         return saved
 

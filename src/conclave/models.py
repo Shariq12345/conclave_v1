@@ -177,7 +177,10 @@ class Organization:
 
 
 class User:
-    def __init__(self, username: str, email: str, full_name: str, organization_id: str = None, status: str = "Active", user_id: str = None, role: str = "Unassigned", password_hash: str = None, last_login: datetime = None, created_at: datetime = None, updated_at: datetime = None):
+    def __init__(self, username: str, email: str, full_name: str, organization_id: str = None, status: str = "Active", user_id: str = None, role: str = "Unassigned", password_hash: str = None, last_login: datetime = None, created_at: datetime = None, updated_at: datetime = None,
+                 email_verified: bool = False, email_verification_token: str = None,
+                 password_reset_token: str = None, password_reset_expires: datetime = None,
+                 mfa_enabled: bool = False, mfa_secret: str = None, mfa_backup_codes: str = None):
         import uuid
         self.id = user_id or str(uuid.uuid4())
         self.organization_id = organization_id.strip() if organization_id else None
@@ -191,6 +194,14 @@ class User:
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
 
+        self.email_verified = email_verified
+        self.email_verification_token = email_verification_token
+        self.password_reset_token = password_reset_token
+        self.password_reset_expires = password_reset_expires
+        self.mfa_enabled = mfa_enabled
+        self.mfa_secret = mfa_secret
+        self.mfa_backup_codes = mfa_backup_codes
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -202,7 +213,9 @@ class User:
             "role": self.role,
             "last_login": self.last_login.isoformat() if self.last_login else None,
             "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
+            "updated_at": self.updated_at.isoformat(),
+            "email_verified": self.email_verified,
+            "mfa_enabled": self.mfa_enabled
         }
 class JoinRequest:
     """

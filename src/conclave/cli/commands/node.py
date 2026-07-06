@@ -592,3 +592,110 @@ def get_server_url_hint():
         return load_server_url()
     except Exception:
         return "http://127.0.0.1:8000"
+
+
+@app.command(name="rotate-cert")
+def rotate_node_cert():
+    """
+    Regenerate local node private key and request a new signed certificate from the server.
+    """
+    console.print()
+    console.print("[bold cyan]Initiating node certificate rotation…[/bold cyan]")
+    
+    node_dir = os.path.expanduser("~/.conclave")
+    id_path = os.path.join(node_dir, "node_id.txt")
+    
+    if not os.path.exists(id_path):
+        console.print("[bold red]Error:[/bold red] Node ID file not found. Has this node been registered?")
+        return
+
+    with open(id_path, "r") as f:
+        node_id = f.read().strip()
+
+    if not node_id:
+        console.print("[bold red]Error:[/bold red] Node ID is empty in node_id.txt.")
+        return
+
+    console.print(f"  Node ID found: [white]{node_id}[/white]")
+
+    # 1. Generate new temporary private key & public key
+    console.print("[bold cyan]Generating new cryptographic keypair…[/bold cyan]")
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.hazmat.primitives import serialization
+    
+    try:
+        new_private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        new_priv_pem = new_private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+        new_pub_pem = new_private_key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        ).decode()
+        console.print("  ✔ New keypair generated.")
+    except Exception as e:
+        console.print(f"[bold red]Key generation error:[/bold red] {e}")
+        return
+
+    # 2. Call rotate-cert API endpoint
+    console.print("[bold cyan]Submitting rotation request to server…[/bold cyan]")
+    payload = {
+        "node_id": node_id,
+        "new_public_key": new_pub_pem
+    }
+
+    try:
+        data = post("/nodes/rotate-cert", payload)
+        new_cert_pem = data.get("certificate")
+        if not new_cert_pem:
+            console.print("[bold red]Error:[/bold red] Server did not return a certificate in the response.")
+            return
+
+        # 3. Save new keys to local storage safely
+        temp_key_path = os.path.join(node_dir, "node_key.new.pem")
+        temp_cert_path = os.path.join(node_dir, "node_cert.new.pem")
+        
+        with open(temp_key_path, "wb") as f:
+            f.write(new_priv_pem)
+        with open(temp_cert_path, "w") as f:
+            f.write(new_cert_pem)
+        
+        # Overwrite active key & cert
+        key_path = os.path.join(node_dir, "node_key.pem")
+        cert_path = os.path.join(node_dir, "node_cert.pem")
+        
+        if os.path.exists(key_path):
+            os.remove(key_path)
+        if os.path.exists(cert_path):
+            os.remove(cert_path)
+            
+        os.rename(temp_key_path, key_path)
+        os.rename(temp_cert_path, cert_path)
+
+        try:
+            os.chmod(key_path, 0o600)
+        except Exception:
+            pass
+
+        console.print()
+        console.print(Panel(
+            f"Node ID       : [bold white]{node_id}[/bold white]\n"
+            f"Identity Cert : [green]Successfully rotated and saved to {cert_path}[/green]\n"
+            f"Private Key   : [green]Successfully rotated and saved to {key_path}[/green]\n\n"
+            f"[dim]The node identity credentials have been renewed. The heartbeat agent will now use the new credentials.[/dim]",
+            title="[bold green]✔ Certificate Rotated Successfully[/bold green]",
+            border_style="green",
+            expand=False,
+            padding=(1, 3)
+        ))
+        console.print()
+
+    except RemoteAPIError as e:
+        console.print(f"[bold red]Certificate rotation API failed:[/bold red] {e}")
+        return
+    except Exception as e:
+        console.print(f"[bold red]Error saving keys/certificates:[/bold red] {e}")
+        return
+

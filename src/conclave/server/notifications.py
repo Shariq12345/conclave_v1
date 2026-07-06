@@ -1,7 +1,40 @@
 import uuid
 from datetime import datetime
 from typing import List, Optional
+import os
+import requests
+import asyncio
+from fastapi import WebSocket
 from conclave.models import Notification
+
+# ── WebSocket Connection Manager ──────────────────────────────────────────────
+
+class WebSocketConnectionManager:
+    """Tracks and broadcasts JSON payloads to active WebSocket subscriber connections."""
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        # iterate on a copy of connections list to prevent concurrency errors
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_json(message)
+            except Exception:
+                if connection in self.active_connections:
+                    self.active_connections.remove(connection)
+
+ws_manager = WebSocketConnectionManager()
+
+
+# ── Notification Channels ─────────────────────────────────────────────────────
 
 class NotificationChannel:
     def send(self, notification: Notification):
@@ -19,11 +52,49 @@ class SlackNotificationChannel(NotificationChannel):
         payload = {
             "text": f"*{notification.title}* ({notification.severity})\n{notification.message}"
         }
-        print(f"[Slack Stub Webhook] Sent notification: {payload}")
+        webhook_url = os.getenv("SLACK_WEBHOOK_URL")
+        if webhook_url:
+            try:
+                response = requests.post(webhook_url, json=payload, timeout=5)
+                if response.status_code != 200:
+                    print(f"[Slack Alert Error] Status {response.status_code}: {response.text}")
+            except Exception as e:
+                print(f"[Slack Alert Exception] Webhook post failed: {e}")
+        else:
+            print(f"[Slack Stub Webhook] Sent notification: {payload}")
 
 class EmailNotificationChannel(NotificationChannel):
     def send(self, notification: Notification):
-        print(f"[Email Stub] Sent email to {notification.recipient} with subject '{notification.title}': {notification.message}")
+        to_email = notification.recipient
+        # If recipient is "all" or non-email, try ADMIN_EMAIL or find the first active Org Admin
+        if not to_email or to_email == "all" or "@" not in to_email:
+            to_email = os.getenv("ADMIN_EMAIL")
+            if not to_email:
+                try:
+                    from conclave.server.registry import ServiceRegistry
+                    users = ServiceRegistry().user_service.list_users()
+                    admins = [u.email for u in users if u.role == "Organization Admin" and u.email]
+                    if admins:
+                        to_email = admins[0]
+                except Exception:
+                    pass
+
+        # If we resolve a valid email address, send it via Resend client
+        if to_email and "@" in to_email:
+            from conclave.server.security import send_resend_email
+            subject = f"[Conclave Alert] {notification.title}"
+            html_content = f"""
+            <h3>Conclave System Notification</h3>
+            <p><strong>Type:</strong> {notification.type}</p>
+            <p><strong>Severity:</strong> {notification.severity}</p>
+            <p><strong>Message:</strong> {notification.message}</p>
+            <p><small>Timestamp: {notification.timestamp.isoformat()}</small></p>
+            """
+            success = send_resend_email(to_email, subject, html_content)
+            if not success:
+                print(f"[Email Send Failed] Could not deliver notification email to {to_email}")
+        else:
+            print(f"[Email Stub] Sent email to {notification.recipient} with subject '{notification.title}': {notification.message}")
 
 class WebSocketNotificationChannel(NotificationChannel):
     def send(self, notification: Notification):
@@ -31,7 +102,13 @@ class WebSocketNotificationChannel(NotificationChannel):
             "event": "notification",
             "data": notification.to_dict()
         }
-        print(f"[WebSocket Broadcast Stub] Broadcast payload: {payload}")
+        # Safely run async broadcast from synchronous handlers or helper threads
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(ws_manager.broadcast(payload))
+        except RuntimeError:
+            # Fallback if no loop is currently running on the execution thread
+            asyncio.run(ws_manager.broadcast(payload))
 
 class NotificationHub:
     def __init__(self):

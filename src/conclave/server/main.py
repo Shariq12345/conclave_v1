@@ -1,6 +1,25 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
+# ── Load environment variables from .env file ────────────────────────────────
+import os
+
+def load_dotenv(dotenv_path=".env"):
+    if os.path.exists(dotenv_path):
+        with open(dotenv_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    key, val = line.split("=", 1)
+                    key = key.strip()
+                    val = val.strip().strip("'").strip('"')
+                    # Set value if not already set in OS environment
+                    os.environ.setdefault(key, val)
+
+load_dotenv()
+
 def patch_uvicorn_transport():
     try:
         from uvicorn.protocols.http.h11_impl import RequestResponseCycle as H11Cycle
@@ -110,6 +129,22 @@ app.include_router(node_router)
 app.include_router(monitor_router)
 app.include_router(notification_router)
 app.include_router(report_router)
+
+
+# ── WebSocket Alert Stream Gateway ──────────────────────────────────────────
+from fastapi import WebSocket, WebSocketDisconnect
+from conclave.server.notifications import ws_manager
+
+@app.websocket("/ws/notifications")
+async def websocket_notifications(websocket: WebSocket):
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            # Maintain active connection and ignore any incoming client frames
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+
 
 # 3. Server Startup script helper
 def start():

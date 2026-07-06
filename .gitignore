@@ -1,2 +1,10 @@
 .venv/
 __pycache__/
+.env
+*.db
+*.db-shm
+*.db-wal
+.conclave/
+scratch/
+test_*.db
+*.pyc

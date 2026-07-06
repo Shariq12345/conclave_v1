@@ -238,6 +238,15 @@ class UserORM(Base):
     last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
+    
+    # New security columns
+    email_verified = Column(Integer, default=0, nullable=False)
+    email_verification_token = Column(String, nullable=True)
+    password_reset_token = Column(String, nullable=True)
+    password_reset_expires = Column(DateTime, nullable=True)
+    mfa_enabled = Column(Integer, default=0, nullable=False)
+    mfa_secret = Column(String, nullable=True)
+    mfa_backup_codes = Column(String, nullable=True)
 
     def to_domain(self) -> User:
         return User(
@@ -251,7 +260,14 @@ class UserORM(Base):
             password_hash=self.password_hash,
             last_login=self.last_login,
             created_at=self.created_at,
-            updated_at=self.updated_at
+            updated_at=self.updated_at,
+            email_verified=bool(self.email_verified),
+            email_verification_token=self.email_verification_token,
+            password_reset_token=self.password_reset_token,
+            password_reset_expires=self.password_reset_expires,
+            mfa_enabled=bool(self.mfa_enabled),
+            mfa_secret=self.mfa_secret,
+            mfa_backup_codes=self.mfa_backup_codes
         )
 
     @classmethod
@@ -267,7 +283,14 @@ class UserORM(Base):
             password_hash=user.password_hash,
             last_login=user.last_login,
             created_at=user.created_at,
-            updated_at=user.updated_at
+            updated_at=user.updated_at,
+            email_verified=1 if user.email_verified else 0,
+            email_verification_token=user.email_verification_token,
+            password_reset_token=user.password_reset_token,
+            password_reset_expires=user.password_reset_expires,
+            mfa_enabled=1 if user.mfa_enabled else 0,
+            mfa_secret=user.mfa_secret,
+            mfa_backup_codes=user.mfa_backup_codes
         )
 
 
