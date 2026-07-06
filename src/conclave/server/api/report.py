@@ -90,3 +90,13 @@ def get_gdpr_compliance(current_user = Depends(require_permission("view_audit"))
         return scorecard
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to run GDPR audit: {e}")
+
+
+@router.get("/compliance/dpdp")
+def get_dpdp_compliance(current_user = Depends(require_permission("view_audit"))):
+    registry = ServiceRegistry()
+    try:
+        scorecard = registry.compliance_service.audit_dpdp()
+        return scorecard
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to run DPDP audit: {e}")

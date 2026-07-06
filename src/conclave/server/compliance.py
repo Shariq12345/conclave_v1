@@ -261,3 +261,155 @@ class ComplianceService:
             "readiness_score": score,
             "checks": checks
         }
+
+    def audit_dpdp(self) -> dict:
+        """
+        Runs security audit checks matching India DPDP Act standards:
+        - Section 5: Consent & Purpose Specification (Training descriptions/purpose)
+        - Section 6: Notice & Consent (Consent presence & validity check on active clients)
+        - Section 8(5): Data Principal Rights (Revocation & Erasure enforcements)
+        - Section 8(6): Security Safeguards (mTLS public keys & Secure Aggregation)
+        """
+        # 1. Consent & Purpose Specification (Section 5)
+        try:
+            sessions = self.registry.training_service.list_sessions()
+            purpose_passed = True
+            purpose_details = []
+            
+            if not sessions:
+                purpose_details.append("No configured training sessions found.")
+            else:
+                for s in sessions:
+                    if not s.description or len(s.description.strip()) < 10:
+                        purpose_passed = False
+                        purpose_details.append(f"Session '{s.name}' lacks a valid purpose description (Section 5).")
+                    else:
+                        purpose_details.append(f"Session '{s.name}' purpose: '{s.description[:45]}...' [PASSED]")
+        except Exception as e:
+            purpose_passed = False
+            purpose_details = [f"Could not load training sessions: {e}"]
+
+        # 2. Notice & Consent (Section 6)
+        try:
+            active_sessions = [s for s in sessions if s.status == "Running"]
+            consent_passed = True
+            consent_details = []
+            
+            consents = self.registry.consent_service.repository.find_all()
+            consent_map = {(c.client_id, c.dataset_name.lower()): c.status for c in consents}
+            
+            clients = self.registry.client_service.repository.find_all()
+            client_id_map = {c.name.lower(): c.id for c in clients}
+            
+            if not active_sessions:
+                consent_details.append("No active running training sessions to audit.")
+            else:
+                for s in active_sessions:
+                    ds = s.dataset_name.lower()
+                    for client_name in s.participating_clients:
+                        c_id = client_id_map.get(client_name.lower(), client_name)
+                        status = consent_map.get((c_id, ds))
+                        if not status:
+                            consent_passed = False
+                            consent_details.append(f"Session '{s.name}': Client '{client_name}' participating without notice/consent record for dataset '{s.dataset_name}'.")
+                        elif status == "Revoked":
+                            consent_passed = False
+                            consent_details.append(f"Session '{s.name}': Client '{client_name}' consent is REVOKED for dataset '{s.dataset_name}'.")
+                        else:
+                            consent_details.append(f"Session '{s.name}': Client '{client_name}' consent status: GRANTED")
+        except Exception as e:
+            consent_passed = False
+            consent_details = [f"Could not audit consent notice registry: {e}"]
+
+        # 3. Data Principal Rights (Section 8(5) - Revocation & Erasure)
+        try:
+            erasure_passed = True
+            erasure_details = []
+            
+            revoked_consents = [c for c in consents if c.status == "Revoked"]
+            if not revoked_consents:
+                erasure_details.append("No revoked consent records found in registry.")
+            else:
+                for rc in revoked_consents:
+                    c_name = rc.client_id
+                    for cl in clients:
+                        if cl.id == rc.client_id:
+                            c_name = cl.name
+                            break
+                    
+                    ds = rc.dataset_name.lower()
+                    for s in active_sessions:
+                        if s.dataset_name.lower() == ds and c_name in s.participating_clients:
+                            erasure_passed = False
+                            erasure_details.append(f"Client '{c_name}' has revoked consent for '{rc.dataset_name}' but is participating in running session '{s.name}'.")
+                    
+                    if erasure_passed:
+                        erasure_details.append(f"Client '{c_name}' consent revocation for '{rc.dataset_name}' successfully enforced.")
+        except Exception as e:
+            erasure_passed = False
+            erasure_details = [f"Could not verify erasure status: {e}"]
+
+        # 4. Security Safeguards (Section 8(6) - mTLS & SecAgg)
+        try:
+            policies = self.registry.policy_service.list_policies()
+            enabled_policies = [p for p in policies if p.status == "Enabled"]
+            nodes = self.registry.node_service.list_nodes()
+            
+            sec_passed = True
+            sec_details = []
+            
+            if not enabled_policies:
+                sec_passed = False
+                sec_details.append("No active governance policies configured yet.")
+            else:
+                for p in enabled_policies:
+                    if not p.secagg_enabled:
+                        sec_passed = False
+                        sec_details.append(f"Policy '{p.name}' does not enforce Secure Aggregation.")
+                    else:
+                        sec_details.append(f"Policy '{p.name}' Secure Aggregation: ENFORCED")
+                        
+            if not nodes:
+                sec_passed = False
+                sec_details.append("No node hosts registered yet.")
+            else:
+                for n in nodes:
+                    if not getattr(n, "public_key", None):
+                        sec_passed = False
+                        sec_details.append(f"Node '{n.hostname}' mTLS configuration is missing.")
+                    else:
+                        sec_details.append(f"Node '{n.hostname}' mTLS status: CONFIGURED")
+        except Exception as e:
+            sec_passed = False
+            sec_details = [f"Could not check security safeguards: {e}"]
+
+        # Calculate score
+        checks = [
+            {"name": "Consent & Purpose Specification", "passed": purpose_passed, "details": purpose_details, "safeguard": "Section 5"},
+            {"name": "Notice & Consent Verification", "passed": consent_passed, "details": consent_details, "safeguard": "Section 6"},
+            {"name": "Data Principal Rights Enforcement", "passed": erasure_passed, "details": erasure_details, "safeguard": "Section 8(5)"},
+            {"name": "Technical Security Safeguards", "passed": sec_passed, "details": sec_details, "safeguard": "Section 8(6)"}
+        ]
+        
+        passed_count = sum(1 for c in checks if c["passed"])
+        score = int((passed_count / len(checks)) * 100.0)
+        
+        # Log compliance check event
+        try:
+            self.registry.audit_service.log_event(
+                event_type="DPDP_AUDIT_RUN",
+                resource_type="Compliance",
+                resource_name="DPDP",
+                action="audit",
+                status="Success",
+                message=f"DPDP compliance audit run completed. Readiness score: {score}%."
+            )
+        except Exception:
+            pass
+
+        return {
+            "framework": "DPDP",
+            "timestamp": datetime.now().isoformat(),
+            "readiness_score": score,
+            "checks": checks
+        }
