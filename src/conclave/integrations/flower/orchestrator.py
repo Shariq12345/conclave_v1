@@ -40,51 +40,67 @@ class DPFedAvg(fl.server.strategy.FedAvg):
         if not results:
             return None, {}
 
+        t_agg_start = time.perf_counter()
+
         if not self.dp_enabled:
-            return super().aggregate_fit(server_round, results, failures)
+            res = super().aggregate_fit(server_round, results, failures)
+        else:
+            from flwr.common import parameters_to_ndarrays, ndarrays_to_parameters
 
-        from flwr.common import parameters_to_ndarrays, ndarrays_to_parameters
+            # Deserialize client updates
+            client_updates = []
+            num_examples_sum = 0
+            for _, fit_res in results:
+                ndarrays = parameters_to_ndarrays(fit_res.parameters)
+                client_updates.append(ndarrays)
+                num_examples_sum += fit_res.num_examples
 
-        # Deserialize client updates
-        client_updates = []
-        num_examples_sum = 0
-        for _, fit_res in results:
-            ndarrays = parameters_to_ndarrays(fit_res.parameters)
-            client_updates.append(ndarrays)
-            num_examples_sum += fit_res.num_examples
+            # Clip updates (Sensitivity bound)
+            clip_norm = 1.0
+            clipped_updates = []
+            for ndarrays in client_updates:
+                clipped = []
+                for array in ndarrays:
+                    norm = np.linalg.norm(array)
+                    if norm > clip_norm:
+                        array = array * (clip_norm / norm)
+                    clipped.append(array)
+                clipped_updates.append(clipped)
 
-        # Clip updates (Sensitivity bound)
-        clip_norm = 1.0
-        clipped_updates = []
-        for ndarrays in client_updates:
-            clipped = []
-            for array in ndarrays:
-                norm = np.linalg.norm(array)
-                if norm > clip_norm:
-                    array = array * (clip_norm / norm)
-                clipped.append(array)
-            clipped_updates.append(clipped)
+            # Weighted aggregate (average)
+            aggregated_ndarrays = [np.zeros_like(x) for x in clipped_updates[0]]
+            for idx, update in enumerate(clipped_updates):
+                weight = results[idx][1].num_examples / num_examples_sum
+                for layer_idx, layer in enumerate(update):
+                    aggregated_ndarrays[layer_idx] += layer * weight
 
-        # Weighted aggregate (average)
-        aggregated_ndarrays = [np.zeros_like(x) for x in clipped_updates[0]]
-        for idx, update in enumerate(clipped_updates):
-            weight = results[idx][1].num_examples / num_examples_sum
-            for layer_idx, layer in enumerate(update):
-                aggregated_ndarrays[layer_idx] += layer * weight
+            # Add Differential Privacy Noise (Laplace Mechanism)
+            # Sensitivity S = 2 * L2_clip_norm / num_clients
+            num_clients = len(results)
+            sensitivity = (2.0 * clip_norm) / float(num_clients)
+            scale = sensitivity / self.dp_epsilon
 
-        # Add Differential Privacy Noise (Laplace Mechanism)
-        # Sensitivity S = 2 * L2_clip_norm / num_clients
-        num_clients = len(results)
-        sensitivity = (2.0 * clip_norm) / float(num_clients)
-        scale = sensitivity / self.dp_epsilon
+            noisy_ndarrays = []
+            for layer in aggregated_ndarrays:
+                noise = np.random.laplace(0.0, scale, size=layer.shape)
+                noisy_ndarrays.append(layer + noise)
 
-        noisy_ndarrays = []
-        for layer in aggregated_ndarrays:
-            noise = np.random.laplace(0.0, scale, size=layer.shape)
-            noisy_ndarrays.append(layer + noise)
+            parameters_aggregated = ndarrays_to_parameters(noisy_ndarrays)
+            res = (parameters_aggregated, {})
 
-        parameters_aggregated = ndarrays_to_parameters(noisy_ndarrays)
-        return parameters_aggregated, {}
+        t_agg_end = time.perf_counter()
+        agg_time_ms = (t_agg_end - t_agg_start) * 1000.0
+
+        if self.session_id:
+            try:
+                import os
+                os.makedirs("results", exist_ok=True)
+                with open("results/aggregation_times.txt", "a") as f_agg:
+                    f_agg.write(f"{self.session_id},{server_round},{agg_time_ms}\n")
+            except Exception:
+                pass
+
+        return res
 
 
 class SimpleFlowerClient(fl.client.NumPyClient):

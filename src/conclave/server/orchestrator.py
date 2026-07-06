@@ -256,10 +256,18 @@ class TrainingOrchestrator:
             except Exception:
                 privacy_cfg = {}
 
+            # Determine num_rounds from session description or fallback to 3
+            num_rounds = 3
+            if session.description:
+                import re
+                match = re.search(r"rounds[:=]\s*(\d+)", session.description, re.IGNORECASE)
+                if match:
+                    num_rounds = int(match.group(1))
+
             is_legacy = all(not getattr(node, "public_key", None) for node in selected_nodes)
             if is_legacy:
                 # Legacy test environment with simulated client threads
-                FlowerOrchestrator.run_training(node_hostnames, privacy_config=privacy_cfg, session_id=session.id)
+                FlowerOrchestrator.run_training(node_hostnames, privacy_config=privacy_cfg, session_id=session.id, num_rounds=num_rounds)
             else:
                 # Assign active tasks to the online nodes for polling
                 for idx, node in enumerate(selected_nodes):
@@ -267,7 +275,7 @@ class TrainingOrchestrator:
                         "session_id": session.id,
                         "server_address": "127.0.0.1:8080",
                         "dataset": session.dataset_name,
-                        "num_rounds": 3,
+                        "num_rounds": num_rounds,
                         "privacy": {
                             **privacy_cfg,
                             "client_index": idx,
@@ -276,7 +284,7 @@ class TrainingOrchestrator:
                     }
                 
                 # Start flower server and wait for actual nodes to check in and connect
-                FlowerOrchestrator.run_server_only(server_address="127.0.0.1:8080", num_rounds=3, privacy_config=privacy_cfg, session_id=session.id)
+                FlowerOrchestrator.run_server_only(server_address="127.0.0.1:8080", num_rounds=num_rounds, privacy_config=privacy_cfg, session_id=session.id)
                 
                 # Clear tasks after execution completes
                 for node in selected_nodes:

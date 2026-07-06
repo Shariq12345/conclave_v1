@@ -1379,16 +1379,29 @@ class NodeService:
 
     def _transition_if_offline(self, node: Node) -> Node:
         """
-        Dynamically transition node to 'Offline' if its last heartbeat was over 120 seconds ago.
+        Dynamically transition node to 'Offline' if its last heartbeat was over a timeout (default 120s).
         Only Online/Approved/Offline nodes are updated. Pending/Rejected/Revoked stay as-is.
         """
         from datetime import datetime
+        import os
         if node.status in ("Approved", "Online", "Offline"):
             delta = (datetime.now() - node.last_heartbeat).total_seconds()
-            if delta > 120.0:
+            timeout = float(os.getenv("CONCLAVE_HEARTBEAT_TIMEOUT", "120.0"))
+            if delta > timeout:
                 if node.status != "Offline":
                     node.status = "Offline"
                     self.node_repository.save(node)
+                    try:
+                        self.audit_service.log_event(
+                            event_type="NODE_DROPPED_OFFLINE",
+                            resource_type="Node",
+                            resource_name=node.hostname,
+                            action="monitor",
+                            status="Warning",
+                            message=f"Node '{node.hostname}' dropped offline (heartbeat timeout)."
+                        )
+                    except Exception:
+                        pass
         return node
 
     def register_node(self, organization_id: str, hostname: str, public_key: str, node_name: str = None,

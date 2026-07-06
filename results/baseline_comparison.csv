@@ -1,0 +1,3 @@
+system,runtime_sec,round_time_sec,aggregation_ms,heartbeat_ms,cpu_percent,peak_memory_mb,payload_kb
+Baseline FL,2.6,0.52,0.15,0.0,16.88,212.0,19531.2
+Conclave,5.56,1.11,11.01,38.541,8.01,372.6,19606.2

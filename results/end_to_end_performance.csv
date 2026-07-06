@@ -1,0 +1,4 @@
+nodes,rounds,total_runtime_sec,avg_round_sec,aggregation_ms,heartbeat_ms,heartbeats,audit_entries,metrics_records,cpu_percent,peak_memory_mb
+3,5,5.07,0.65,2.517,27.331,10,20,10,6.04,312.0
+5,5,5.38,0.62,4.453,35.288,17,24,17,5.95,313.9
+10,5,6.04,0.66,16.444,44.405,37,34,37,6.43,321.5

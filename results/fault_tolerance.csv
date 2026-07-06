@@ -1,0 +1,6 @@
+scenario,failure_detected,detection_latency_ms,recovery_time_ms,training_completed,audit_logged,system_crashed
+Node Failure During Training,Yes,801.49,474.22,Yes,Yes,No
+Missed Heartbeats,Yes,1997.08,9.33,No,Yes,No
+Invalid Client Certificate,Yes,17.16,0.0,No,Yes,No
+Tampered Audit Ledger,Yes,51.45,0.0,No,Yes,No
+Slow Node,No,0.0,0.0,Yes,Yes,No
