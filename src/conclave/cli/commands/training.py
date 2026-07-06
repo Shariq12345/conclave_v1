@@ -189,7 +189,7 @@ def start_training(name: str):
                 console.print(f"  [red]{cross_marker}[/red] {check_name}")
         console.print("\nResult: [bold green]PASSED[/bold green]\n")
         console.print("[bold white]Starting Federated Learning Training...[/bold white]")
-        console.print("[dim](Mock Execution)[/dim]")
+        console.print("[dim]Flower training server initiated in background. Track progress with 'monitor status'.[/dim]")
         console.print()
     except RemoteAPIError as e:
         console.print()

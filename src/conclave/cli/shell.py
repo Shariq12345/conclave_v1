@@ -71,20 +71,40 @@ def _print_onboarding_banner():
 
 def _scenario_create_org() -> bool:
     """Scenario 1: Create a new organization and become its admin."""
+    import questionary
     console.print()
     console.print(Rule("[bold cyan]Create a New Organization[/bold cyan]", style="bright_blue"))
     console.print("[dim]You will become the Organization Admin for this new organization.[/dim]")
     console.print()
 
-    org_name  = Prompt.ask("  [bold cyan]Organization name[/bold cyan]", console=console)
-    org_type  = Prompt.ask("  [bold cyan]Organization type[/bold cyan]",
-                           choices=["Hospital", "Bank", "Research Lab", "University", "Government", "Other"],
-                           default="Hospital", show_choices=True, console=console)
-    console.print()
-    username  = Prompt.ask("  [bold cyan]Admin username[/bold cyan]", console=console)
-    full_name = Prompt.ask("  [bold cyan]Full name[/bold cyan]", console=console)
-    email     = Prompt.ask("  [bold cyan]Email address[/bold cyan]", console=console)
-    password  = _prompt_password()
+    org_name = questionary.text("Organization name:").ask()
+    if not org_name:
+        return False
+    org_type = questionary.select(
+        "Organization type:",
+        choices=["Hospital", "Bank", "Research Lab", "University", "Government", "Other"],
+        default="Hospital"
+    ).ask()
+    if not org_type:
+        return False
+    
+    username = questionary.text("Admin username:").ask()
+    if not username:
+        return False
+    full_name = questionary.text("Full name:").ask()
+    if not full_name:
+        return False
+    email = questionary.text("Email address:").ask()
+    if not email:
+        return False
+    
+    password = questionary.password("Password:").ask()
+    if not password:
+        return False
+    confirm = questionary.password("Confirm password:").ask()
+    if password != confirm:
+        console.print("[bold red]Error:[/bold red] Passwords do not match.")
+        return False
 
     console.print()
     with console.status("[bold cyan]Creating your organization…[/bold cyan]"):
@@ -133,17 +153,31 @@ def _scenario_create_org() -> bool:
 
 def _scenario_join_org() -> bool:
     """Scenario 2: Join an existing organization (creates a pending join request)."""
+    import questionary
     console.print()
     console.print(Rule("[bold cyan]Join an Existing Organization[/bold cyan]", style="bright_blue"))
     console.print("[dim]Your request will be reviewed by the Organization Admin before you can log in.[/dim]")
     console.print()
 
-    org_name  = Prompt.ask("  [bold cyan]Organization name[/bold cyan]", console=console)
-    console.print()
-    username  = Prompt.ask("  [bold cyan]Choose a username[/bold cyan]", console=console)
-    full_name = Prompt.ask("  [bold name]Full name[/bold name]", console=console)
-    email     = Prompt.ask("  [bold cyan]Email address[/bold cyan]", console=console)
-    password  = _prompt_password()
+    org_name = questionary.text("Organization name:").ask()
+    if not org_name:
+        return False
+    username = questionary.text("Choose a username:").ask()
+    if not username:
+        return False
+    full_name = questionary.text("Full name:").ask()
+    if not full_name:
+        return False
+    email = questionary.text("Email address:").ask()
+    if not email:
+        return False
+    password = questionary.password("Password:").ask()
+    if not password:
+        return False
+    confirm = questionary.password("Confirm password:").ask()
+    if password != confirm:
+        console.print("[bold red]Error:[/bold red] Passwords do not match.")
+        return False
 
     console.print()
     with console.status("[bold cyan]Submitting your join request…[/bold cyan]"):
@@ -190,14 +224,16 @@ def _scenario_join_org() -> bool:
 
 def _scenario_connect_server() -> bool:
     """Scenario 3: Point the CLI at an existing Conclave server."""
+    import questionary
     console.print()
     console.print(Rule("[bold cyan]Connect to an Existing Server[/bold cyan]", style="bright_blue"))
     console.print("[dim]Enter the address of the Conclave Server your organization is running.[/dim]")
     console.print()
 
     current = _server_url()
-    url = Prompt.ask(f"  [bold cyan]Server URL[/bold cyan]",
-                     default=current, console=console)
+    url = questionary.text("Server URL:", default=current).ask()
+    if not url:
+        return False
     url = url.rstrip("/")
 
     with console.status("[bold cyan]Connecting…[/bold cyan]"):
@@ -236,47 +272,35 @@ def _run_onboarding_wizard() -> bool:
     Returns True if the user should enter the REPL, False if not.
     """
     _print_onboarding_banner()
+    import questionary
 
-    choices_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 2))
-    choices_table.add_column("Num", style="bold yellow", width=4)
-    choices_table.add_column("Option", style="bold white")
-    choices_table.add_column("Description", style="dim white")
+    choice = questionary.select(
+        "First-Time Onboarding Wizard — Choose an option:",
+        choices=[
+            questionary.Choice("Create Organization (Start fresh — create a new org and become its admin)", value="1"),
+            questionary.Choice("Join Organization (Request to join an existing org)", value="2"),
+            questionary.Choice("Connect to Server (Point the CLI at an existing Conclave deployment)", value="3"),
+        ]
+    ).ask()
 
-    choices_table.add_row("1", "Create Organization",
-                          "Start fresh — create a new org and become its admin")
-    choices_table.add_row("2", "Join Organization",
-                          "Request to join an existing org (pending approval)")
-    choices_table.add_row("3", "Connect to Server",
-                          "Point the CLI at an existing Conclave deployment")
-
-    console.print(choices_table)
-    console.print()
-
-    while True:
-        choice = Prompt.ask(
-            "  [bold cyan]Choose an option[/bold cyan]",
-            choices=["1", "2", "3"],
-            show_choices=False,
-            console=console,
-        )
-        if choice == "1":
-            return _scenario_create_org()
-        elif choice == "2":
-            _scenario_join_org()
-            return False
-        elif choice == "3":
-            _scenario_connect_server()
-            # After connecting, re-check status
-            status = _get_onboarding_status()
-            if status and status.get("initialized"):
-                console.print("[dim]Server is set up. Entering REPL — run [bold cyan]auth login[/bold cyan] to authenticate.[/dim]")
-                return True
-            elif status and not status.get("initialized"):
-                # Server exists but has no orgs yet — show wizard again
-                console.print()
-                console.print("[dim]The connected server has no organizations yet. Let's set one up.[/dim]")
-                return _run_onboarding_wizard()
+    if choice == "1":
+        return _scenario_create_org()
+    elif choice == "2":
+        _scenario_join_org()
+        return False
+    elif choice == "3":
+        _scenario_connect_server()
+        # After connecting, re-check status
+        status = _get_onboarding_status()
+        if status and status.get("initialized"):
+            console.print("[dim]Server is set up. Entering REPL — run [bold cyan]auth login[/bold cyan] to authenticate.[/dim]")
             return True
+        elif status and not status.get("initialized"):
+            # Server exists but has no orgs yet — show wizard again
+            console.print()
+            console.print("[dim]The connected server has no organizations yet. Let's set one up.[/dim]")
+            return _run_onboarding_wizard()
+        return True
 
 
 # ── Welcome screen ─────────────────────────────────────────────────────────────

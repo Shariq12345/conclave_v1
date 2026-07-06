@@ -22,18 +22,24 @@ def draw_progress_bar(current: int, total: int, width: int = 15) -> str:
         return "[dim]Pending[/dim]"
     pct = min(1.0, max(0.0, float(current) / float(total)))
     filled = int(round(pct * width))
-    bar = "█" * filled + "░" * (width - filled)
+    bar = "#" * filled + "-" * (width - filled)
     color = "green" if pct == 1.0 else "yellow" if pct > 0.0 else "red"
     return f"[{color}]{bar}[/{color}] [bold]{int(pct * 100)}%[/bold] ({current}/{total})"
 
 
-def display_monitor_dashboard():
+from rich.console import Group
+from rich.text import Text
+from rich.live import Live
+
+def render_monitor_dashboard() -> Panel:
     try:
         data = get("/monitor/status")
+        renderables = []
         
-        # 1. Title / Header
-        console.print()
-        console.print(f"[bold cyan]✦ Conclave Node & Governance Monitoring System ✦[/bold cyan] [dim](Refreshed: {data.get('timestamp')})[/dim]")
+        # 1. Header
+        header = Text.from_markup(f"[bold cyan]*** Conclave Node & Governance Monitoring System ***[/bold cyan] [dim](Refreshed: {data.get('timestamp')})[/dim]")
+        renderables.append(header)
+        renderables.append(Text("")) # Spacer
         
         # 2. Nodes Health Table
         nodes_table = Table(
@@ -97,7 +103,7 @@ def display_monitor_dashboard():
             # Heartbeat time formatter
             lh_str = "[red]Never[/red]"
             if n.get("last_heartbeat"):
-                lh = datetime_parse = n["last_heartbeat"].split(".")[0].replace("T", " ")
+                lh = n["last_heartbeat"].split(".")[0].replace("T", " ")
                 lh_str = lh.split()[-1] # Only show time segment for compactness
 
             nodes_table.add_row(
@@ -111,9 +117,8 @@ def display_monitor_dashboard():
                 temp_str,
                 lh_str
             )
-
-        console.print(nodes_table)
-        console.print()
+        renderables.append(nodes_table)
+        renderables.append(Text("")) # Spacer
 
         # 3. Active Sessions Table
         sessions = data.get("sessions", [])
@@ -143,8 +148,8 @@ def display_monitor_dashboard():
                     s["dataset"],
                     draw_progress_bar(s["current_round"], s["total_rounds"])
                 )
-            console.print(sess_table)
-            console.print()
+            renderables.append(sess_table)
+            renderables.append(Text("")) # Spacer
 
         # 4. Alerts Panel
         alerts = data.get("alerts", [])
@@ -156,24 +161,27 @@ def display_monitor_dashboard():
                     f"• [[bold {severity_color}]{a['severity']}[/bold {severity_color}]] {a['message']} "
                     f"[dim](ID: {a['id'][:8]} | Source: {a['source']} {a['source_id'][:8]})[/dim]"
                 )
-            console.print(Panel(
+            renderables.append(Panel(
                 "\n".join(alert_items),
-                title="[bold red]✘ Active System Alerts[/bold red]",
+                title="[bold red][X] Active System Alerts[/bold red]",
                 border_style="red",
-                expand=False,
+                expand=True,
                 padding=(1, 3)
             ))
         else:
-            console.print(Panel(
-                "[bold green]✔ All systems healthy. No active alerts.[/bold green]",
+            renderables.append(Panel(
+                "[bold green][OK] All systems healthy. No active alerts.[/bold green]",
                 border_style="green",
-                expand=False,
+                expand=True,
                 padding=(1, 3)
             ))
-        console.print()
+        
+        return Panel(Group(*renderables), border_style="cyan", padding=(1, 2))
     except RemoteAPIError as e:
-        console.print(f"[bold red]Error querying status:[/bold red] {e}")
+        return Panel(Text(f"Error querying status: {e}", style="bold red"), border_style="red", padding=(1, 2))
 
+def display_monitor_dashboard():
+    console.print(render_monitor_dashboard())
 
 @app.command(name="status")
 def monitor_status(
@@ -184,11 +192,10 @@ def monitor_status(
     """
     if watch:
         try:
-            while True:
-                console.clear()
-                display_monitor_dashboard()
-                console.print("[dim]Press Ctrl+C to exit monitoring watch loop…[/dim]")
-                time.sleep(2)
+            with Live(render_monitor_dashboard(), console=console, refresh_per_second=0.5) as live:
+                while True:
+                    time.sleep(2)
+                    live.update(render_monitor_dashboard())
         except KeyboardInterrupt:
             console.print()
             console.print("[yellow]Monitoring watch stopped.[/yellow]")
