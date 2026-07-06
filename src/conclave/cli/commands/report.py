@@ -177,3 +177,60 @@ def hipaa_compliance():
         
     except RemoteAPIError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
+
+
+@app.command(name="gdpr")
+def gdpr_compliance():
+    """
+    Run GDPR data protection audit checks and display the readiness scorecard.
+    """
+    try:
+        report = get("/reports/compliance/gdpr")
+        
+        console.print()
+        console.print(f"[bold cyan]*** Conclave GDPR Data Protection Safeguard Audit Scorecard ***[/bold cyan]")
+        console.print(f"[dim]Timestamp: {report.get('timestamp')}[/dim]\n")
+        
+        score = report.get("readiness_score", 0)
+        score_color = "green" if score >= 80 else "yellow" if score >= 50 else "red"
+        console.print(Panel(
+            f"Overall GDPR Compliance Readiness: [bold {score_color}]{score}%[/bold {score_color}]",
+            border_style=score_color,
+            expand=False,
+            padding=(1, 3)
+        ))
+        console.print()
+        
+        table = Table(
+            title="[bold white]GDPR Safeguards Checklist[/bold white]",
+            title_justify="left",
+            box=box.ROUNDED,
+            border_style="bright_blue",
+            header_style="bold bright_blue",
+            padding=(0, 2)
+        )
+        table.add_column("Article Ref", style="cyan", width=16)
+        table.add_column("Check Safeguard Name", style="bold white")
+        table.add_column("Status", style="bold")
+        
+        for check in report.get("checks", []):
+            status_str = "[bold green]PASS[/bold green]" if check["passed"] else "[bold red]FAIL[/bold red]"
+            table.add_row(
+                check["safeguard"],
+                check["name"],
+                status_str
+            )
+        console.print(table)
+        console.print()
+        
+        # Display details/fail warnings
+        console.print("[bold white]Detailed Findings & Audit Trails:[/bold white]")
+        for check in report.get("checks", []):
+            icon = "[green][OK][/green]" if check["passed"] else "[red][X][/red]"
+            console.print(f"\n{icon} [bold cyan]{check['name']}[/bold cyan] ({check['safeguard']})")
+            for detail in check.get("details", []):
+                console.print(f"  - {detail}")
+        console.print()
+        
+    except RemoteAPIError as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")

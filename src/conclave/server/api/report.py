@@ -80,3 +80,13 @@ def get_hipaa_compliance(current_user = Depends(require_permission("view_audit")
         return scorecard
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to run HIPAA audit: {e}")
+
+
+@router.get("/compliance/gdpr")
+def get_gdpr_compliance(current_user = Depends(require_permission("view_audit"))):
+    registry = ServiceRegistry()
+    try:
+        scorecard = registry.compliance_service.audit_gdpr()
+        return scorecard
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to run GDPR audit: {e}")
