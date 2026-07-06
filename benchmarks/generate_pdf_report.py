@@ -268,8 +268,8 @@ def generate_report(pdf_path: str):
     story.append(Paragraph("1. Simulated Hospital Node Scalability", h1_style))
     desc1 = (
         "This experiment evaluates how Conclave handles infrastructure scale. We vary "
-        "the number of active hospital nodes ($1, 3, 5, 10, 20$) while maintaining a fixed "
-        "training session configurations. Nodes use secure JWT handshake signatures for heartbeats "
+        "the number of active hospital nodes (1, 3, 5, 10, or 20) while maintaining a fixed "
+        "training session configuration. Nodes use secure JWT handshake signatures for heartbeats "
         "and fetch training tasks dynamically. Telemetry records client RAM usage and network activity."
     )
     story.append(Paragraph(desc1, body_style))
@@ -296,7 +296,7 @@ def generate_report(pdf_path: str):
     story.append(Paragraph("2. Model Parameter Size Scalability", h1_style))
     desc2 = (
         "We measure aggregation, masking, and Differential Privacy computational overhead as the "
-        "global neural model scales ($1\\,000, 10\\,000, 100\\,000, 1\\,000\\,000$ float32 parameters) "
+        "global neural model scales (1,000, 10,000, 100,000, or 1,000,000 float32 parameters) "
         "with 5 nodes. The experiment isolates execution latencies of NumPy serialization, Secure "
         "Aggregation seed-aligned masking additions, and Laplace noise computation."
     )
@@ -347,7 +347,7 @@ def generate_report(pdf_path: str):
     story.append(Paragraph("4. Cryptographic Audit Ledger Scalability", h1_style))
     desc4 = (
         "We evaluate the append performance and integrity verification time of Conclave's SHA-256 "
-        "cryptographic hash chain ledger. We test ledger sizes from $500$ up to $50\\,000$ sequential entries, "
+        "cryptographic hash chain ledger. We test ledger sizes from 500 up to 50,000 sequential entries, "
         "measuring block creation, throughput, and tamper detection times on database corruption."
     )
     story.append(Paragraph(desc4, body_style))
@@ -371,7 +371,7 @@ def generate_report(pdf_path: str):
     # ==========================================
     story.append(Paragraph("5. Metrics Database Ingestion Throughput", h1_style))
     desc5 = (
-        "We simulate concurrent metric logs from simulated clients ($1, 5, 10, 20, 50$ database "
+        "We simulate concurrent metric logs from simulated clients (1, 5, 10, 20, or 50 database "
         "connection threads) inserting 1,000 status records. The SQLite database is pre-configured "
         "in WAL mode to enable concurrency. Throughput and write latencies are evaluated."
     )
@@ -396,7 +396,7 @@ def generate_report(pdf_path: str):
     # ==========================================
     story.append(Paragraph("6. End-to-End Federated Learning Performance", h1_style))
     desc6 = (
-        "This benchmark runs complete 5-round FL training sessions ($3, 5, 10$ nodes) with all security "
+        "This benchmark runs complete 5-round FL training sessions (3, 5, or 10 nodes) with all security "
         "and auditing features fully active. Aggregation times are recorded, and metrics count entries "
         "in the SQLite files are verified."
     )
@@ -491,14 +491,14 @@ def generate_report(pdf_path: str):
         "This performance evaluation of the Conclave platform demonstrates that privacy-preserving "
         "federated learning systems can be deployed without prohibitive overhead. "
         "Our key findings indicate:<br/><br/>"
-        "&bull; <b>Bounded Computational Overhead:</b> Differential Privacy Laplace noise and "
+        "• <b>Bounded Computational Overhead:</b> Differential Privacy Laplace noise and "
         "Secure Aggregation masking contribute only minor computational delay (11.0 ms aggregate aggregation latency "
         "on 100,000 parameters), which is insignificant compared to average network transit latencies.<br/>"
-        "&bull; <b>Minimal Telemetry Cost:</b> Background database telemetry and JWT heartbeat tracking "
+        "• <b>Minimal Telemetry Cost:</b> Background database telemetry and JWT heartbeat tracking "
         "contribute negligible execution delay and account for less than 0.38% increase in overall network payloads.<br/>"
-        "&bull; <b>Resilient Fault Tolerance:</b> The platform guarantees execution survival with "
+        "• <b>Resilient Fault Tolerance:</b> The platform guarantees execution survival with "
         "automatic failover and audit logging on node drop-offs, while maintaining a 100% training completion rate.<br/>"
-        "&bull; <b>Cryptographic Verifiability:</b> Hash-chained event logs provide complete audit verifiability "
+        "• <b>Cryptographic Verifiability:</b> Hash-chained event logs provide complete audit verifiability "
         "supporting fast block-level tamper detection under 52 ms."
     )
     story.append(Paragraph(conclusion_text, body_style))
