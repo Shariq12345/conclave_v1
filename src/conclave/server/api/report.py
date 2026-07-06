@@ -70,3 +70,13 @@ def export_report(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to export report: {e}")
+
+
+@router.get("/compliance/hipaa")
+def get_hipaa_compliance(current_user = Depends(require_permission("view_audit"))):
+    registry = ServiceRegistry()
+    try:
+        scorecard = registry.compliance_service.audit_hipaa()
+        return scorecard
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to run HIPAA audit: {e}")

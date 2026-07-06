@@ -266,6 +266,10 @@ class SQLitePolicyRepository(PolicyRepository):
                 orm_policy.description = policy.description
                 orm_policy.status = policy.status
                 orm_policy.created_at = policy.created_at
+                orm_policy.secagg_enabled = 1 if policy.secagg_enabled else 0
+                orm_policy.dp_enabled = 1 if policy.dp_enabled else 0
+                orm_policy.dp_epsilon = policy.dp_epsilon
+                orm_policy.dp_delta = policy.dp_delta
             else:
                 orm_policy = PolicyORM.from_domain(policy)
                 session.add(orm_policy)

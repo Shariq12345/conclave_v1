@@ -35,6 +35,7 @@ class ServiceRegistry:
             cls._instance._notification_service = None
             cls._instance._notification_hub = None
             cls._instance._reporting_service = None
+            cls._instance._compliance_service = None
             
             # Start background monitoring daemon
             cls._instance.monitoring_service.start_background_monitor()
@@ -243,6 +244,13 @@ class ServiceRegistry:
             from conclave.server.reporting import ReportingService
             self._reporting_service = ReportingService(self)
         return self._reporting_service
+
+    @property
+    def compliance_service(self):
+        if self._compliance_service is None:
+            from conclave.server.compliance import ComplianceService
+            self._compliance_service = ComplianceService(self)
+        return self._compliance_service
 
 
 
