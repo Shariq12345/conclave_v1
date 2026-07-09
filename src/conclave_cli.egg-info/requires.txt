@@ -9,3 +9,5 @@ uvicorn>=0.20.0
 requests>=2.31.0
 bcrypt>=4.0.0
 pyjwt>=2.8.0
+questionary>=2.0.0
+textual>=0.50.0

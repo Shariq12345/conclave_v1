@@ -105,48 +105,165 @@ class DPFedAvg(fl.server.strategy.FedAvg):
 
 class SimpleFlowerClient(fl.client.NumPyClient):
     """
-    Flower client simulating model training and optional cryptographic Secure Aggregation (pairwise masking).
+    Flower client that loads real local CSV datasets, trains a binary Logistic Regression 
+    model using Gradient Descent, and supports cryptographic Secure Aggregation masking.
     """
     def __init__(self, client_name: str, privacy_config: dict = None):
         self.client_name = client_name
         self.privacy_config = privacy_config or {}
+        self.dataset_name = self.privacy_config.get("dataset_name", "diabetes")
+        
+        # Load or provision local data
+        self.X, self.y = self._load_or_generate_dataset()
+        
+        # Initialize model parameters: w (weights) and b (bias)
+        num_features = self.X.shape[1]
+        self.w = np.zeros(num_features, dtype=np.float32)
+        self.b = np.zeros(1, dtype=np.float32)
+
+    def _load_or_generate_dataset(self):
+        import os
+        import csv
+        
+        data_dir = os.path.expanduser("~/.conclave/data")
+        os.makedirs(data_dir, exist_ok=True)
+        path = os.path.join(data_dir, f"{self.client_name}_{self.dataset_name}.csv")
+        
+        if not os.path.exists(path):
+            print(f"[Conclave Data Provisioner] Local file '{path}' not found. Generating synthetic '{self.dataset_name}' dataset...")
+            # Deterministic generator based on client name to ensure reproducibility
+            seed_val = hash(self.client_name) % (2**32 - 1)
+            rng = np.random.default_rng(seed_val)
+            
+            # Generate 120 samples, 4 features
+            X_mock = rng.normal(loc=0.0, scale=1.0, size=(120, 4))
+            # True weights and bias for mock classification boundary
+            true_w = np.array([1.2, -1.8, 0.6, -1.2], dtype=np.float32)
+            true_b = 0.1
+            logits = X_mock @ true_w + true_b
+            probs = 1.0 / (1.0 + np.exp(-logits))
+            y_mock = (probs > 0.5).astype(int)
+            
+            # Write structured CSV
+            with open(path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["feature_1", "feature_2", "feature_3", "feature_4", "target"])
+                for i in range(len(X_mock)):
+                    writer.writerow(list(X_mock[i]) + [y_mock[i]])
+            print(f"[Conclave Data Provisioner] Synthetic dataset successfully written to '{path}' (120 rows).")
+
+        # Load CSV dataset
+        X_list = []
+        y_list = []
+        with open(path, "r") as f:
+            reader = csv.reader(f)
+            header = next(reader)
+            target_idx = -1
+            for idx, col in enumerate(header):
+                if col.lower() in ("target", "label", "y", "status"):
+                    target_idx = idx
+                    break
+            
+            for row in reader:
+                if not row:
+                    continue
+                try:
+                    row_float = [float(val) for val in row]
+                except ValueError:
+                    continue
+                
+                if target_idx != -1:
+                    y_val = row_float[target_idx]
+                    X_vals = [row_float[i] for i in range(len(row_float)) if i != target_idx]
+                else:
+                    y_val = row_float[-1]
+                    X_vals = row_float[:-1]
+                
+                X_list.append(X_vals)
+                y_list.append(y_val)
+                
+        X = np.array(X_list, dtype=np.float32)
+        y = np.array(y_list, dtype=np.float32)
+        print(f"[{self.client_name}] Loaded dataset '{self.dataset_name}' from '{path}' (Shape: {X.shape})")
+        return X, y
 
     def get_parameters(self, config):
-        return [np.zeros((2, 2))]
+        return [self.w, self.b]
 
     def fit(self, parameters, config):
-        time.sleep(0.2)
-        # Simulate local training update
-        updated_params = [p + 1.0 for p in parameters]
+        # Update local parameters with server's global parameters
+        self.w = parameters[0].copy()
+        self.b = parameters[1].copy()
 
-        # Secure Aggregation Masking
+        # Local training settings
+        epochs = 5
+        lr = 0.1
+        m = self.X.shape[0]
+
+        # Logistic Regression Gradient Descent
+        for epoch in range(epochs):
+            logits = self.X @ self.w + self.b
+            logits = np.clip(logits, -50.0, 50.0) # Avoid overflow/underflow
+            y_pred = 1.0 / (1.0 + np.exp(-logits))
+            
+            # Loss computation
+            loss = -np.mean(self.y * np.log(y_pred + 1e-15) + (1.0 - self.y) * np.log(1.0 - y_pred + 1e-15))
+            
+            # Gradient calculations
+            dw = (1.0 / m) * (self.X.T @ (y_pred - self.y))
+            db = (1.0 / m) * np.sum(y_pred - self.y)
+            
+            # Updates
+            self.w -= lr * dw
+            self.b -= lr * db
+
+        # Final predictions and local metrics
+        logits = self.X @ self.w + self.b
+        logits = np.clip(logits, -50.0, 50.0)
+        y_pred = 1.0 / (1.0 + np.exp(-logits))
+        preds = (y_pred > 0.5).astype(int)
+        accuracy = np.mean(preds == self.y)
+        
+        updated_params = [self.w, self.b]
+
+        # Secure Aggregation Masking for multiple parameters
         if self.privacy_config.get("secagg_enabled"):
             client_names = self.privacy_config.get("client_names", [])
             my_idx = self.privacy_config.get("client_index")
             if client_names and my_idx is not None:
-                mask_sum = np.zeros_like(updated_params[0])
-                for idx, other_name in enumerate(client_names):
-                    if idx == my_idx:
-                        continue
-                    # Deterministic pairwise seed
-                    pair = sorted([self.client_name, other_name])
-                    seed = hash(f"{pair[0]}_{pair[1]}") % (2**32 - 1)
-                    rng = np.random.default_rng(seed)
+                for param_idx in range(len(updated_params)):
+                    mask_sum = np.zeros_like(updated_params[param_idx])
+                    for idx, other_name in enumerate(client_names):
+                        if idx == my_idx:
+                            continue
+                        # Pairwise deterministic alignment
+                        pair = sorted([self.client_name, other_name])
+                        seed = hash(f"{pair[0]}_{pair[1]}_{param_idx}") % (2**32 - 1)
+                        rng = np.random.default_rng(seed)
+                        
+                        mask = rng.standard_normal(updated_params[param_idx].shape)
+                        if my_idx < idx:
+                            mask_sum += mask
+                        else:
+                            mask_sum -= mask
                     
-                    # Generate random noise mask of identical shape
-                    mask = rng.standard_normal(updated_params[0].shape)
-                    if my_idx < idx:
-                        mask_sum += mask
-                    else:
-                        mask_sum -= mask
-                
-                # Apply mask to client update
-                updated_params[0] = updated_params[0] + mask_sum
+                    updated_params[param_idx] = updated_params[param_idx] + mask_sum
 
-        return updated_params, 100, {"accuracy": 0.8}
+        return updated_params, len(self.y), {"accuracy": float(accuracy), "loss": float(loss)}
 
     def evaluate(self, parameters, config):
-        return 0.1, 100, {"accuracy": 0.85}
+        w = parameters[0]
+        b = parameters[1]
+        
+        logits = self.X @ w + b
+        logits = np.clip(logits, -50.0, 50.0)
+        y_pred = 1.0 / (1.0 + np.exp(-logits))
+        
+        loss = -np.mean(self.y * np.log(y_pred + 1e-15) + (1.0 - self.y) * np.log(1.0 - y_pred + 1e-15))
+        preds = (y_pred > 0.5).astype(int)
+        accuracy = np.mean(preds == self.y)
+        
+        return float(loss), len(self.y), {"accuracy": float(accuracy)}
 
 
 class FlowerOrchestrator:

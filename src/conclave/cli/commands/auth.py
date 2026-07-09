@@ -58,12 +58,14 @@ def register_user(
 
 @app.command(name="login")
 def login(
-    username_or_email: str = typer.Option(..., "--username", "-u", prompt="Username or Email", help="Username or Email address")
+    username_or_email: str = typer.Option(..., "--username", "-u", prompt="Username or Email", help="Username or Email address"),
+    password: str = typer.Option(None, "--password", "-p", help="Optional password (bypasses prompt)")
 ):
     """
     Log in with your credentials to obtain a security token.
     """
-    password = typer.prompt("Password", hide_input=True)
+    if not password:
+        password = typer.prompt("Password", hide_input=True)
     try:
         data = post("/auth/login", {
             "username_or_email": username_or_email,

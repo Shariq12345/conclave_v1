@@ -1,0 +1,26 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies (gcc, python3-dev for compiling psutil if no prebuilt wheels are available)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install psutil explicitly first, as it is optional in node.py but highly recommended
+RUN pip install --no-cache-dir psutil
+
+# Copy dependency definition and source
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+
+# Install the conclave cli package
+RUN pip install --no-cache-dir -e .
+
+# Copy and setup entrypoint script
+COPY docker-entrypoint-node.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint-node.sh
+
+# Entrypoint setup
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-node.sh"]

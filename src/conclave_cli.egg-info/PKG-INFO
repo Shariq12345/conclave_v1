@@ -18,6 +18,8 @@ Requires-Dist: uvicorn>=0.20.0
 Requires-Dist: requests>=2.31.0
 Requires-Dist: bcrypt>=4.0.0
 Requires-Dist: pyjwt>=2.8.0
+Requires-Dist: questionary>=2.0.0
+Requires-Dist: textual>=0.50.0
 
 # Conclave
 

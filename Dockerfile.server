@@ -1,0 +1,27 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy pyproject.toml and README.md first to leverage docker caching
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+
+# Install the package in editable mode for convenience, including CLI commands
+RUN pip install --no-cache-dir -e .
+
+# Expose server port (8000 for FastAPI API/WebSocket) and Flower aggregation port (8080)
+EXPOSE 8000
+EXPOSE 8080
+
+# Environment defaults
+ENV CONCLAVE_SERVER_HOST=0.0.0.0
+ENV CONCLAVE_SERVER_PORT=8000
+
+# Start Conclave server
+CMD ["conclave-server"]

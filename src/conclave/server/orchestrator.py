@@ -251,10 +251,11 @@ class TrainingOrchestrator:
                     "secagg_enabled": policy.secagg_enabled,
                     "dp_enabled": policy.dp_enabled,
                     "dp_epsilon": policy.dp_epsilon,
-                    "dp_delta": policy.dp_delta
+                    "dp_delta": policy.dp_delta,
+                    "dataset_name": session.dataset_name
                 }
             except Exception:
-                privacy_cfg = {}
+                privacy_cfg = {"dataset_name": session.dataset_name}
 
             # Determine num_rounds from session description or fallback to 3
             num_rounds = 3

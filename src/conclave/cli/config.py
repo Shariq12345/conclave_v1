@@ -39,6 +39,9 @@ def _save(data: dict) -> None:
 
 def load_server_url() -> str:
     """Return the configured server URL (with any trailing slash removed)."""
+    env_url = os.getenv("CONCLAVE_SERVER_URL")
+    if env_url:
+        return env_url.rstrip("/")
     return _load().get("server_url", _DEFAULTS["server_url"]).rstrip("/")
 
 
