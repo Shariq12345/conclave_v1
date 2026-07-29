@@ -122,22 +122,15 @@ def run_node_operations(node_idx: int, P: int, client_names: List[str], secagg_e
     
     if secagg_enabled:
         t_secagg_start = time.perf_counter()
-        mask_sum = np.zeros(P, dtype=np.float32)
         my_name = client_names[node_idx]
-        for idx, other_name in enumerate(client_names):
-            if idx == node_idx:
-                continue
-            pair = sorted([my_name, other_name])
-            seed = hash(f"{pair[0]}_{pair[1]}") % (2**32 - 1)
-            rng_pair = np.random.default_rng(seed)
-            
-            mask = rng_pair.standard_normal(P, dtype=np.float32)
-            if node_idx < idx:
-                mask_sum += mask
-            else:
-                mask_sum -= mask
-                
-        masked_parameters = parameters + mask_sum
+        from conclave.integrations.flower.orchestrator import CryptographicSecAgg
+        masked_parameters_list = CryptographicSecAgg.apply_pairwise_masks(
+            client_name=my_name,
+            my_idx=node_idx,
+            client_names=client_names,
+            parameters=[parameters]
+        )
+        masked_parameters = masked_parameters_list[0]
         t_secagg_end = time.perf_counter()
         secagg_time_ms = (t_secagg_end - t_secagg_start) * 1000.0
     
