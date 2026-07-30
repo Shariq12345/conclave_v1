@@ -45,6 +45,21 @@ class MetricsDB:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS privacy_budget_metrics (
+                    organization_id TEXT NOT NULL,
+                    session_id TEXT NOT NULL,
+                    timestamp DATETIME NOT NULL,
+                    current_round INTEGER NOT NULL,
+                    epsilon REAL NOT NULL,
+                    delta REAL NOT NULL,
+                    noise_multiplier REAL NOT NULL,
+                    clip_norm REAL NOT NULL,
+                    renyi_order REAL NOT NULL,
+                    budget_epsilon REAL NOT NULL,
+                    budget_exhausted INTEGER NOT NULL DEFAULT 0
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS alerts (
                     id TEXT PRIMARY KEY,
                     timestamp DATETIME,
@@ -85,6 +100,36 @@ class MonitoringService:
                 (session_id, datetime.now().isoformat(), current_round, total_rounds, status)
             )
             conn.commit()
+
+    def log_privacy_budget(self, organization_id: str, session_id: str, current_round: int, epsilon: float,
+                           delta: float, noise_multiplier: float, clip_norm: float, renyi_order: float,
+                           budget_epsilon: float):
+        exhausted = int(epsilon > budget_epsilon)
+        with self.db._get_conn() as conn:
+            conn.execute(
+                """INSERT INTO privacy_budget_metrics
+                (organization_id, session_id, timestamp, current_round, epsilon, delta, noise_multiplier,
+                 clip_norm, renyi_order, budget_epsilon, budget_exhausted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (organization_id, session_id, datetime.now().isoformat(), current_round, epsilon, delta,
+                 noise_multiplier, clip_norm, renyi_order, budget_epsilon, exhausted),
+            )
+            conn.commit()
+
+    def get_privacy_budget_history(self, organization_id: str, session_id: str = None) -> List[dict]:
+        query = """SELECT session_id, timestamp, current_round, epsilon, delta, noise_multiplier, clip_norm,
+                   renyi_order, budget_epsilon, budget_exhausted FROM privacy_budget_metrics
+                   WHERE organization_id = ?"""
+        values = [organization_id]
+        if session_id:
+            query += " AND session_id = ?"
+            values.append(session_id)
+        query += " ORDER BY timestamp"
+        with self.db._get_conn() as conn:
+            rows = conn.execute(query, values).fetchall()
+        keys = ("session_id", "timestamp", "current_round", "epsilon", "delta", "noise_multiplier",
+                "clip_norm", "renyi_order", "budget_epsilon", "budget_exhausted")
+        return [dict(zip(keys, row)) for row in rows]
 
     def create_alert(self, severity: str, source: str, source_id: str, message: str) -> dict:
         alert_id = str(uuid.uuid4())

@@ -31,6 +31,14 @@ try:
 except ImportError:
     HAS_CRYPTO = False
 
+from conclave.integrations.flower.workloads import (
+    build_cifar10_resnet18,
+    is_real_workload,
+    load_cifar10_partition,
+)
+from conclave.integrations.flower.threshold_secagg import ThresholdSecAggContext
+from conclave.integrations.flower.privacy import GaussianRDPAccountant
+
 
 class CryptographicSecAgg:
     """
@@ -102,99 +110,114 @@ class CryptographicSecAgg:
 
 
 class DPFedAvg(fl.server.strategy.FedAvg):
-    """
-    Advanced FedAvg Strategy with Gaussian Mechanism and Rényi Differential Privacy (RDP) Accounting.
-    Clips client weight updates to L2 norm sensitivity bound C and injects calibrated Gaussian noise.
-    Computes cumulative RDP budget epsilon(alpha) across training rounds.
-    """
-    def __init__(self, dp_enabled=False, dp_epsilon=1.0, dp_delta=1e-5, clip_norm=1.0, noise_multiplier=0.5, session_id=None, num_rounds=3, *args, **kwargs):
+    """FedAvg with calibrated central Gaussian DP and multi-order RDP accounting."""
+    def __init__(self, dp_enabled=False, dp_epsilon=1.0, dp_delta=1e-5, clip_norm=1.0,
+                 noise_multiplier=None, session_id=None, organization_ids=None, num_rounds=3, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dp_enabled = dp_enabled
-        self.dp_epsilon = dp_epsilon
-        self.dp_delta = dp_delta
-        self.clip_norm = clip_norm
-        self.noise_multiplier = noise_multiplier
+        self.dp_epsilon = float(dp_epsilon)
+        self.dp_delta = float(dp_delta)
+        self.clip_norm = float(clip_norm)
         self.session_id = session_id
-        self.num_rounds = num_rounds
+        self.organization_ids = list(organization_ids or [])
+        self.num_rounds = int(num_rounds)
+        if dp_enabled:
+            self.noise_multiplier = float(noise_multiplier) if noise_multiplier is not None else GaussianRDPAccountant.calibrate_noise_multiplier(
+                self.dp_epsilon, self.dp_delta, self.num_rounds
+            )
+            self.accountant = GaussianRDPAccountant(self.noise_multiplier, self.dp_delta)
+        else:
+            self.noise_multiplier = 0.0
+            self.accountant = None
         self.accumulated_rdp_eps = 0.0
+        self.renyi_order = None
 
-    def compute_rdp_epsilon(self, alpha=3.0, current_round=1):
-        """Calculates cumulative Rényi Differential Privacy (RDP) epsilon at order alpha."""
-        if not self.dp_enabled or self.noise_multiplier <= 0:
+    def compute_rdp_epsilon(self, alpha=None, current_round=1):
+        """Return the tightest composed epsilon; ``alpha`` is retained for API compatibility."""
+        if not self.dp_enabled:
             return 0.0
-        # RDP per round for Gaussian mechanism: epsilon(alpha) = alpha / (2 * sigma^2)
-        sigma = self.noise_multiplier
-        rdp_per_round = alpha / (2.0 * (sigma ** 2))
-        total_rdp = rdp_per_round * current_round
-        # Conversion to standard (epsilon, delta)-DP: epsilon = RDP + log(1/delta) / (alpha - 1)
-        eps_converted = total_rdp + (np.log(1.0 / self.dp_delta) / (alpha - 1.0))
-        return float(eps_converted)
+        epsilon, _ = self.accountant.epsilon(current_round)
+        return float(epsilon)
+
+    def _record_privacy_budget(self, server_round: int):
+        self.accumulated_rdp_eps, self.renyi_order = self.accountant.epsilon(server_round)
+        if not self.session_id:
+            return
+        try:
+            from conclave.server.registry import ServiceRegistry
+            monitoring = ServiceRegistry().monitoring_service
+            for organization_id in self.organization_ids:
+                monitoring.log_privacy_budget(
+                    organization_id=organization_id,
+                    session_id=self.session_id,
+                    current_round=server_round,
+                    epsilon=self.accumulated_rdp_eps,
+                    delta=self.dp_delta,
+                    noise_multiplier=self.noise_multiplier,
+                    clip_norm=self.clip_norm,
+                    renyi_order=self.renyi_order,
+                    budget_epsilon=self.dp_epsilon,
+                )
+        except Exception:
+            # Training must not silently lose its DP guarantee, but an external
+            # monitoring failure should not corrupt the FL aggregation result.
+            logging.exception("Could not persist the differential-privacy budget metric")
 
     def aggregate_fit(self, server_round, results, failures):
         if self.session_id:
             try:
                 from conclave.server.registry import ServiceRegistry
-                registry = ServiceRegistry()
-                registry.monitoring_service.log_session_metrics(
-                    session_id=self.session_id,
-                    current_round=server_round,
-                    total_rounds=self.num_rounds,
-                    status="Running"
+                ServiceRegistry().monitoring_service.log_session_metrics(
+                    session_id=self.session_id, current_round=server_round,
+                    total_rounds=self.num_rounds, status="Running"
                 )
             except Exception:
                 pass
-
         if not results:
             return None, {}
 
         t_agg_start = time.perf_counter()
-
         if not self.dp_enabled:
             res = super().aggregate_fit(server_round, results, failures)
         else:
             from flwr.common import parameters_to_ndarrays, ndarrays_to_parameters
-
             client_updates = []
             num_examples_sum = 0
             for _, fit_res in results:
-                ndarrays = parameters_to_ndarrays(fit_res.parameters)
-                client_updates.append(ndarrays)
+                client_updates.append(parameters_to_ndarrays(fit_res.parameters))
                 num_examples_sum += fit_res.num_examples
 
-            # 1. L2 Update Norm Clipping (Sensitivity Bounding)
             clipped_updates = []
             for ndarrays in client_updates:
                 total_norm = np.sqrt(sum(np.sum(np.square(arr)) for arr in ndarrays))
                 scale = min(1.0, self.clip_norm / (total_norm + 1e-10))
-                clipped = [arr * scale for arr in ndarrays]
-                clipped_updates.append(clipped)
+                clipped_updates.append([arr * scale for arr in ndarrays])
 
-            # 2. Weighted Aggregation
             aggregated_ndarrays = [np.zeros_like(x, dtype=np.float32) for x in clipped_updates[0]]
             for idx, update in enumerate(clipped_updates):
                 weight = results[idx][1].num_examples / float(num_examples_sum)
                 for layer_idx, layer in enumerate(update):
                     aggregated_ndarrays[layer_idx] += layer * weight
 
-            # 3. Gaussian Mechanism Noise Addition
-            num_clients = len(results)
-            sigma = (self.clip_norm * self.noise_multiplier) / float(num_clients)
+            # The aggregate sensitivity is C / N for N equally participating clients.
+            sigma = (self.clip_norm * self.noise_multiplier) / float(len(results))
+            noisy_ndarrays = [
+                layer + np.random.normal(0.0, sigma, size=layer.shape).astype(np.float32)
+                for layer in aggregated_ndarrays
+            ]
+            self._record_privacy_budget(server_round)
+            print(
+                f"[Conclave RDP Accountant] Round {server_round}/{self.num_rounds}: "
+                f"epsilon={self.accumulated_rdp_eps:.4f}, delta={self.dp_delta}, "
+                f"order={self.renyi_order:g}, sigma={self.noise_multiplier:.4f}"
+            )
+            res = (ndarrays_to_parameters(noisy_ndarrays), {
+                "accumulated_rdp_epsilon": self.accumulated_rdp_eps,
+                "renyi_order": self.renyi_order,
+                "noise_multiplier": self.noise_multiplier,
+            })
 
-            noisy_ndarrays = []
-            for layer in aggregated_ndarrays:
-                noise = np.random.normal(0.0, sigma, size=layer.shape).astype(np.float32)
-                noisy_ndarrays.append(layer + noise)
-
-            # 4. RDP Privacy Accounting
-            self.accumulated_rdp_eps = self.compute_rdp_epsilon(alpha=3.0, current_round=server_round)
-            print(f"[Conclave RDP Accountant] Round {server_round}/{self.num_rounds}: Cumulative RDP Epsilon = {self.accumulated_rdp_eps:.4f} (target delta={self.dp_delta})")
-
-            parameters_aggregated = ndarrays_to_parameters(noisy_ndarrays)
-            res = (parameters_aggregated, {"accumulated_rdp_epsilon": self.accumulated_rdp_eps})
-
-        t_agg_end = time.perf_counter()
-        agg_time_ms = (t_agg_end - t_agg_start) * 1000.0
-
+        agg_time_ms = (time.perf_counter() - t_agg_start) * 1000.0
         if self.session_id:
             try:
                 os.makedirs("results", exist_ok=True)
@@ -202,7 +225,6 @@ class DPFedAvg(fl.server.strategy.FedAvg):
                     f_agg.write(f"{self.session_id},{server_round},{agg_time_ms}\n")
             except Exception:
                 pass
-
         return res
 
 
@@ -263,20 +285,38 @@ class PyTorchFlowerClient(fl.client.NumPyClient):
 
         if not HAS_TORCH:
             raise RuntimeError("PyTorch is not installed. Fall back to SimpleFlowerClient.")
+        self.device = torch.device(self.privacy_config.get("device", "cuda" if torch.cuda.is_available() else "cpu"))
 
-        # Load local PyTorch dataset
+        self.real_workload = is_real_workload(self.dataset_name)
         self.train_loader, self.test_loader, self.input_dim, self.num_classes = self._prepare_data()
 
-        # Initialize PyTorch Model
-        if self.model_type == "cnn":
-            self.model = VisionCNN(in_channels=1, num_classes=self.num_classes)
+        # CIFAR-10 sessions use a CIFAR-10-adapted ResNet-18. The MLP remains
+        # available for lightweight tabular demonstrations.
+        if self.real_workload:
+            self.model = build_cifar10_resnet18(num_classes=self.num_classes)
         else:
             self.model = TabularMLP(input_dim=self.input_dim, hidden_dim=16, output_dim=self.num_classes)
+        self.model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.01)
 
     def _prepare_data(self):
+        if is_real_workload(self.dataset_name):
+            client_index = int(self.privacy_config.get("client_index", 0))
+            num_clients = max(1, len(self.privacy_config.get("client_names", [])))
+            train_loader, test_loader = load_cifar10_partition(
+                client_index=client_index,
+                num_clients=num_clients,
+                data_dir=self.privacy_config.get("data_dir"),
+                dirichlet_alpha=float(self.privacy_config.get("dirichlet_alpha", 0.5)),
+                seed=int(self.privacy_config.get("partition_seed", 42)),
+                batch_size=int(self.privacy_config.get("batch_size", 32)),
+                num_workers=int(self.privacy_config.get("num_workers", 0)),
+                download=bool(self.privacy_config.get("download_dataset", True)),
+            )
+            return train_loader, test_loader, 3, 10
+
         # Generate or load dataset
         fallback_client = SimpleFlowerClient(self.client_name, self.privacy_config)
         X, y = fallback_client.X, fallback_client.y
@@ -297,24 +337,29 @@ class PyTorchFlowerClient(fl.client.NumPyClient):
         return train_loader, test_loader, X.shape[1], num_classes
 
     def get_parameters(self, config):
-        return [val.cpu().numpy() for val in self.model.state_dict().values()]
+        # Aggregate trainable parameters only. BatchNorm buffers stay local,
+        # avoiding invalid averaging of integer tracking counters.
+        return [param.detach().cpu().numpy() for param in self.model.parameters()]
+
+    def _set_parameters(self, parameters):
+        for parameter, value in zip(self.model.parameters(), parameters):
+            parameter.data.copy_(torch.from_numpy(value).to(self.device, dtype=parameter.dtype))
 
     def fit(self, parameters, config):
-        params_dict = zip(self.model.state_dict().keys(), parameters)
-        state_dict = {k: torch.tensor(v) for k, v in params_dict}
-        self.model.load_state_dict(state_dict, strict=True)
+        self._set_parameters(parameters)
 
         self.model.train()
-        epochs = 3
+        epochs = int(self.privacy_config.get("local_epochs", 1 if self.real_workload else 3))
         for epoch in range(epochs):
             for batch_X, batch_y in self.train_loader:
+                batch_X, batch_y = batch_X.to(self.device), batch_y.to(self.device)
                 self.optimizer.zero_grad()
                 outputs = self.model(batch_X)
                 loss = self.criterion(outputs, batch_y)
                 loss.backward()
                 self.optimizer.step()
 
-        updated_params = [val.cpu().numpy() for val in self.model.state_dict().values()]
+        updated_params = self.get_parameters(config)
 
         # Apply Cryptographic Secure Aggregation
         if self.privacy_config.get("secagg_enabled"):
@@ -333,9 +378,7 @@ class PyTorchFlowerClient(fl.client.NumPyClient):
         return updated_params, len(self.train_loader.dataset), {"accuracy": acc_val, "loss": loss_val}
 
     def evaluate(self, parameters, config):
-        params_dict = zip(self.model.state_dict().keys(), parameters)
-        state_dict = {k: torch.tensor(v) for k, v in params_dict}
-        self.model.load_state_dict(state_dict, strict=True)
+        self._set_parameters(parameters)
 
         loss_val, acc_val = self._evaluate_local()
         return loss_val, len(self.test_loader.dataset), {"accuracy": acc_val}
@@ -347,6 +390,7 @@ class PyTorchFlowerClient(fl.client.NumPyClient):
         total = 0
         with torch.no_grad():
             for batch_X, batch_y in self.test_loader:
+                batch_X, batch_y = batch_X.to(self.device), batch_y.to(self.device)
                 outputs = self.model(batch_X)
                 loss = self.criterion(outputs, batch_y)
                 total_loss += loss.item() * len(batch_y)
@@ -489,6 +533,15 @@ class SimpleFlowerClient(fl.client.NumPyClient):
         return float(loss), len(self.y), {"accuracy": float(accuracy)}
 
 
+def create_flower_client(client_name: str, privacy_config: dict = None):
+    """Select the PyTorch trainer when available, with a safe legacy fallback."""
+    privacy = privacy_config or {}
+    use_pytorch = privacy.get("use_pytorch", HAS_TORCH)
+    if use_pytorch and HAS_TORCH:
+        return PyTorchFlowerClient(client_name, privacy_config=privacy)
+    return SimpleFlowerClient(client_name, privacy_config=privacy)
+
+
 class FlowerOrchestrator:
     @staticmethod
     def run_training(client_names: list, server_address: str = "127.0.0.1:8080", num_rounds: int = 3, privacy_config: dict = None, session_id: str = None):
@@ -500,10 +553,16 @@ class FlowerOrchestrator:
 
         # Pre-generate ECDH keypairs for cryptographic SecAgg if active
         secagg_keypairs = {}
+        secagg_context = None
         if privacy.get("secagg_enabled"):
-            for name in client_names:
-                priv, pub = CryptographicSecAgg.generate_keypair()
-                secagg_keypairs[name] = (priv, pub)
+            # Each round setup creates ephemeral X25519 keys and distributes
+            # Shamir recovery shares to peers. The client path remains
+            # compatible with the existing pairwise-mask interface.
+            configured_threshold = privacy.get("secagg_threshold")
+            secagg_context = ThresholdSecAggContext.create(
+                client_names, threshold=int(configured_threshold) if configured_threshold is not None else None
+            )
+            secagg_keypairs = secagg_context.keypairs
 
         # 1. Start the Flower server process
         cmd_code = (
@@ -533,15 +592,12 @@ class FlowerOrchestrator:
                     **privacy,
                     "client_index": idx,
                     "client_names": client_names,
-                    "secagg_keypairs": secagg_keypairs
+                    "secagg_keypairs": secagg_keypairs,
+                    "secagg_recovery_shares": secagg_context.shares_for_client(name) if secagg_context else {},
+                    "secagg_threshold": secagg_context.threshold if secagg_context else None,
                 }
 
-                # Use PyTorch if available or explicitly requested, else Simple client
-                use_pytorch = privacy.get("use_pytorch", HAS_TORCH)
-                if use_pytorch and HAS_TORCH:
-                    client = PyTorchFlowerClient(name, privacy_config=client_priv_cfg)
-                else:
-                    client = SimpleFlowerClient(name, privacy_config=client_priv_cfg)
+                client = create_flower_client(name, privacy_config=client_priv_cfg)
 
                 fl.client.start_numpy_client(
                     server_address=server_address,

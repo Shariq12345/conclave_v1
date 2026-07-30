@@ -506,8 +506,8 @@ def node_heartbeat(
         try:
             console.print(f"\n[bold cyan]✦ [{time.strftime('%H:%M:%S')}] Active task detected for session: {sess_id}. Starting Flower client…[/bold cyan]")
             import flwr as fl
-            from conclave.integrations.flower.orchestrator import SimpleFlowerClient
-            client = SimpleFlowerClient(node_id, privacy_config=privacy_cfg)
+            from conclave.integrations.flower.orchestrator import create_flower_client
+            client = create_flower_client(node_id, privacy_config=privacy_cfg)
             fl.client.start_numpy_client(server_address=srv_addr, client=client)
             console.print(f"[bold green]✔ [{time.strftime('%H:%M:%S')}] Flower client completed training for session: {sess_id}[/bold green]\n")
         except Exception as ex:

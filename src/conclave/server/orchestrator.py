@@ -252,10 +252,11 @@ class TrainingOrchestrator:
                     "dp_enabled": policy.dp_enabled,
                     "dp_epsilon": policy.dp_epsilon,
                     "dp_delta": policy.dp_delta,
-                    "dataset_name": session.dataset_name
+                    "dataset_name": session.dataset_name,
+                    "use_pytorch": True,
                 }
             except Exception:
-                privacy_cfg = {"dataset_name": session.dataset_name}
+                privacy_cfg = {"dataset_name": session.dataset_name, "use_pytorch": True}
 
             # Determine num_rounds from session description or fallback to 3
             num_rounds = 3
