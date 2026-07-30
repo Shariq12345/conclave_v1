@@ -145,5 +145,5 @@
 - [x] **Priority 1 (Essential):** Add a PyTorch CIFAR-10 ResNet-18 trainer with deterministic non-IID client partitions.
 - [ ] **Priority 2 (Essential):** Implement Dirichlet non-IID data partitioning in benchmarks.
 - [x] **Priority 3 (High Value):** Implement X25519 key agreement with Shamir threshold recovery for dropped-client mask cancellation (remote-node share transport remains future work).
-- [ ] **Priority 4 (High Value):** Integrate Rényi Differential Privacy / Opacus accountant for tracking cumulative privacy budget $(\epsilon, \delta)$.
+- [x] **Priority 4 (High Value):** Integrate Rényi Differential Privacy / Opacus accountant for tracking cumulative privacy budget $(\epsilon, \delta)$.
 - [ ] **Priority 5 (Nice-to-Have):** Add Byzantine poisoning attack simulations to demonstrate Conclave's fault tolerance and dynamic node failover.
