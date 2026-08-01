@@ -33,7 +33,9 @@ FedGuard highlights an inherent cryptographic trade-off between client data priv
 
 \subsection{Statutory Compliance Boundaries of Machine Unlearning}
 
-To satisfy legal mandates under GDPR Article 17 (Right to Erasure), FedGuard incorporates an automated machine unlearning protocol (\texttt{FedEraser} checkpoint un-rolling). While empirical evaluations demonstrate rapid accuracy recovery post-revocation, current machine unlearning literature lacks a universally accepted mathematical proof guaranteeing absolute zero information residual across all non-linear deep neural network parameters. Furthermore, regulatory definitions of "data erasure" within trained statistical models remain subject to evolving legal jurisprudence across international jurisdictions.
+To operationalize legal mandates under GDPR Article 17 (Right to Erasure), FedGuard incorporates an automated machine unlearning protocol based on gradient history un-rolling (\texttt{FedEraser} algorithm~\cite{liu2021federaser}). It is critical to frame this mechanism as a heuristic \emph{empirical purification} technique rather than an exact theoretical unlearning bound.
+
+While \texttt{FedEraser} efficiently un-rolls historical gradient contributions and restores model accuracy and loss metrics within 2 training rounds, it does not provide an absolute, provably certified zero-information bound (such as exact model retraining from scratch or differential-privacy certified unlearning with guaranteed radius $\gamma$). In complex non-linear deep neural networks, parameter dependencies across SGD iterations introduce non-trivial residual data influence. Furthermore, statutory legal definitions of "data erasure" within trained statistical parameter distributions remain an open question in international jurisprudence. FedGuard provides the programmatic triggers, credential eviction, and checkpoint purification workflows necessary for enterprise compliance, but framing unlearning guarantees as empirical rather than mathematically exact is essential to managing theoretical security expectations.
 
 \subsection{Production Orchestrator Deployment Challenges}
 
