@@ -24,8 +24,15 @@ src/conclave/cli/commands/training.py
 src/conclave/cli/commands/user.py
 src/conclave/integrations/__init__.py
 src/conclave/integrations/flower/__init__.py
+src/conclave/integrations/flower/data_partitioner.py
 src/conclave/integrations/flower/orchestrator.py
+src/conclave/integrations/flower/privacy.py
+src/conclave/integrations/flower/robust_aggregation.py
+src/conclave/integrations/flower/threshold_secagg.py
+src/conclave/integrations/flower/unlearning.py
+src/conclave/integrations/flower/workloads.py
 src/conclave/server/__init__.py
+src/conclave/server/attestation.py
 src/conclave/server/authz.py
 src/conclave/server/compliance.py
 src/conclave/server/database.py
@@ -59,3 +66,8 @@ src/conclave_cli.egg-info/dependency_links.txt
 src/conclave_cli.egg-info/entry_points.txt
 src/conclave_cli.egg-info/requires.txt
 src/conclave_cli.egg-info/top_level.txt
+tests/test_privacy_governance.py
+tests/test_rdp_accountant.py
+tests/test_real_workload.py
+tests/test_robust_aggregation.py
+tests/test_threshold_secagg.py

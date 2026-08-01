@@ -285,7 +285,8 @@ class Node:
                  python_version: str = "", flower_version: str = "", conclave_version: str = "",
                  status: str = "Pending", registered_at: datetime = None, last_heartbeat: datetime = None,
                  last_ip: str = "127.0.0.1", public_key: str = None, certificate: str = None,
-                 registration_token: str = None, trust_status: str = "Untrusted"):
+                 registration_token: str = None, trust_status: str = "Untrusted",
+                 attestation_quote: str = None, unlearning_status: str = "None"):
         import uuid
         self.id = node_id or str(uuid.uuid4())
         self.organization_id = organization_id.strip() if organization_id else ""
@@ -314,6 +315,8 @@ class Node:
         self.certificate = certificate
         self.registration_token = registration_token
         self.trust_status = trust_status
+        self.attestation_quote = attestation_quote
+        self.unlearning_status = unlearning_status  # "None", "Triggered", "Completed"
 
     def to_dict(self):
         return {
@@ -343,7 +346,9 @@ class Node:
             "public_key": self.public_key,
             "certificate": self.certificate,
             "registration_token": self.registration_token,
-            "trust_status": self.trust_status
+            "trust_status": self.trust_status,
+            "attestation_quote": self.attestation_quote,
+            "unlearning_status": self.unlearning_status
         }
 
 

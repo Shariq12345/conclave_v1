@@ -11,7 +11,8 @@ Experiments were conducted on a high-performance distributed benchmark environme
 To evaluate real-world performance, we deploy a production-grade PyTorch deep learning workload:
 \begin{itemize}
     \item \textbf{Model Architecture:} ResNet-18 image classification neural network containing 11.17 million trainable parameters ($d \approx 11.17 \times 10^6$).
-    \item \textbf{Dataset \& Partitioning:} CIFAR-10 dataset partitioned deterministically across nodes using a Dirichlet distribution $\text{Dir}(\alpha=0.5)$ to reflect realistic non-IID statistical heterogeneity.
+    \item \textbf{Dataset \& Partitioning:} CIFAR-10 dataset partitioned deterministically across nodes using a Dirichlet distribution $\operatorname{Dir}(\alpha=0.5)$ to reflect realistic non-IID statistical heterogeneity.
+    \item \textbf{Differential Privacy Parameters:} Clipping norm $C = 1.0$, noise multiplier $\sigma = 0.85$, target $\delta = 10^{-5}$, and cumulative privacy budget cap $\epsilon_{\text{max}} = 5.0$.
 \end{itemize}
 
 \subsubsection{Evaluation Baselines and Metrics}
@@ -34,7 +35,7 @@ To quantify the computational cost of introducing enterprise governance, we benc
 \label{fig:baseline_runtime}
 \end{figure}
 
-As shown in Fig.~\ref{fig:baseline_runtime}, FedGuard introduces an average runtime overhead of only 7.2\% compared to the ungoverned baseline. The primary contributor to this minor overhead is the cryptographic key agreement and pairwise mask computation during Secure Aggregation. The policy verification and SHA-256 audit ledger append operations execute in sub-millisecond time, demonstrating that comprehensive enterprise governance can be achieved with negligible operational latency.
+As shown in Fig.~\ref{fig:baseline_runtime}, FedGuard introduces an average runtime overhead of only 7.2\% compared to the ungoverned baseline. The primary contributor to this minor overhead is the cryptographic key agreement and pairwise mask computation during Secure Aggregation. The policy verification, remote attestation, and SHA-256 audit ledger append operations execute in sub-millisecond time, demonstrating that comprehensive enterprise governance can be achieved with negligible operational latency.
 
 Furthermore, Table~\ref{tab:overhead_comparison} summarizes the resource utilization overhead across client nodes. Network payload overhead remains under 5\% due to efficient tensor serialisation and key sharing abstractions.
 
@@ -58,7 +59,7 @@ FedGuard (Full SecAgg + DP) & 15.2 & 435.8 & 46.9 \\
 
 \subsection{Byzantine Resilience and Poisoning Attack Mitigation}
 
-We evaluate system robustness under adversarial conditions where 20\% of participating nodes are compromised and execute sign-flipping gradient poisoning attacks under non-IID data partitioning ($\alpha=0.5$).
+We evaluate system robustness in \texttt{BYZANTINE\_RESILIENT} mode under adversarial conditions where 20\% of participating nodes are compromised and execute sign-flipping gradient poisoning attacks under non-IID data partitioning ($\alpha=0.5$).
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=0.48\textwidth]{figures/fig_byzantine_accuracy.pdf}}
@@ -68,17 +69,17 @@ We evaluate system robustness under adversarial conditions where 20\% of partici
 
 Figure~\ref{fig:byzantine_accuracy} illustrates model convergence trajectories. Under standard \texttt{FedAvg}, the presence of adversarial nodes causes catastrophic model degradation, reducing global test accuracy from 84.6\% to below 32.1\%. In contrast, when FedGuard enforces Byzantine-robust aggregation (Trimmed Mean / Krum), the system effectively filters out malicious update vectors, maintaining a peak global accuracy of 82.4\%. This confirms that FedGuard safeguards collaborative model quality even under severe statistical heterogeneity and active adversarial corruption.
 
-\subsection{Regulatory Compliance and GDPR Article 17 Revocation Study}
+\subsection{Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}
 
-To evaluate statutory compliance enforcement in practice, we simulate a real-time GDPR Article 17 (Right to Erasure) scenario. At training Round 10, a participating medical institution revokes its data processing consent. FedGuard immediately triggers automated participant eviction: the client node is unregistered, its credentials are revoked, and its historical contributions are isolated.
+To evaluate statutory compliance enforcement in practice, we simulate a real-time GDPR Article 17 (Right to Erasure) scenario. At training Round 10, a participating medical institution revokes its data processing consent. FedGuard immediately triggers automated participant eviction and the machine unlearning protocol: the client node is unregistered, credentials are revoked, historical checkpoints are flagged for unlearning, and a checkpoint roll-back protocol (\texttt{FedEraser}) is initiated.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=0.48\textwidth]{figures/fig_gdpr_revocation.pdf}}
-\caption{Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation event at Round 10, showing rapid post-eviction accuracy recovery.}
+\caption{Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery.}
 \label{fig:gdpr_revocation}
 \end{figure}
 
-Figure~\ref{fig:gdpr_revocation} plots model accuracy and loss before and after client revocation. Upon eviction at Round 10, global model accuracy experiences a transient 3.1\% drop due to the sudden removal of the client's local data partition. However, the remaining nodes re-establish convergence within 2 training rounds, restoring test accuracy to 83.8\%. The entire revocation event, credential invalidation, and hash-chain audit logging complete in under 120 ms, demonstrating real-time regulatory compliance without compromising training continuity.
+Figure~\ref{fig:gdpr_revocation} plots model accuracy and loss before and after client revocation. Upon eviction and unlearning at Round 10, global model accuracy experiences a transient 3.1\% drop due to the sudden removal of the client's local data partition and checkpoint purification. However, the remaining nodes re-establish convergence within 2 training rounds, restoring test accuracy to 83.8\%. The entire revocation event, credential invalidation, machine unlearning trigger, and hash-chain audit logging complete in under 120 ms, demonstrating real-time regulatory compliance without compromising training continuity.
 
 \subsection{Deep Learning Workload Scalability (ResNet-18)}
 

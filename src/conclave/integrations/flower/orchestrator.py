@@ -40,6 +40,18 @@ from conclave.integrations.flower.threshold_secagg import ThresholdSecAggContext
 from conclave.integrations.flower.privacy import GaussianRDPAccountant
 
 
+class GovernanceMode:
+    """
+    Defines security & governance execution modes:
+    - SECURE_AGGREGATION: Enforces X25519 + Shamir SecAgg + RDP Differential Privacy. Disables individual update inspection.
+    - BYZANTINE_RESILIENT: Enforces Byzantine-robust aggregation (Trimmed Mean, Median, Krum) + RDP DP + L2 clipping. Disables SecAgg masking.
+    - HYBRID_AUDITED: Evaluates and logs the active security mode per round in the audit ledger.
+    """
+    SECURE_AGGREGATION = "SECURE_AGGREGATION"
+    BYZANTINE_RESILIENT = "BYZANTINE_RESILIENT"
+    HYBRID_AUDITED = "HYBRID_AUDITED"
+
+
 class CryptographicSecAgg:
     """
     Cryptographic Secure Aggregation Key Exchange & Masking.

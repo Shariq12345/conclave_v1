@@ -1,11 +1,11 @@
 \section{Cryptographic Security \& Privacy Protocols}
 \label{sec:crypto_privacy}
 
-This section details the cryptographic and mathematical mechanisms incorporated within FedGuard to ensure privacy preservation, client confidentiality, and adversarial robustness. The dual-layer security framework combines \textbf{Threshold Secure Aggregation} for masking model updates against server inference, \textbf{R\'enyi Differential Privacy (RDP)} accounting for formal privacy budget tracking, and \textbf{Byzantine-Robust Aggregation} to withstand gradient poisoning under non-IID data distributions.
+This section details the cryptographic and mathematical mechanisms incorporated within FedGuard to ensure privacy preservation, client confidentiality, and adversarial robustness. The security framework operates under two mutually exclusive governance modes selected according to the enterprise threat profile: \textbf{Secure Aggregation Mode} (\texttt{SECURE\_AGGREGATION}) for masking model updates against server inference, and \textbf{Byzantine-Resilient Mode} (\texttt{BYZANTINE\_RESILIENT}) for inspecting unmasked gradient coordinate distances to withstand adversarial poisoning under non-IID data distributions. Both modes enforce formal \textbf{R\'enyi Differential Privacy (RDP)} budget accounting.
 
-\subsection{Threshold Secure Aggregation Protocol}
+\subsection{Threshold Secure Aggregation Protocol (\texttt{SECURE\_AGGREGATION} Mode)}
 
-To prevent a semi-honest aggregator from inspecting individual client update tensors $x_u \in \mathbb{R}^d$, FedGuard integrates a threshold Secure Aggregation protocol based on pairwise pseudo-random masking and key sharing.
+To prevent a semi-honest aggregator from inspecting individual client update tensors $x_u \in \mathbb{R}^d$, FedGuard integrates a threshold Secure Aggregation protocol based on pairwise pseudo-random masking and key sharing~\cite{bonawitz2017practical, so2021lightsecagg}.
 
 \subsubsection{Key Agreement and Mask Generation}
 During round setup, each pair of participating clients $(u, v)$ with $u < v$ executes an X25519 Elliptic Curve Diffie-Hellman (ECDH) key exchange to derive a shared secret key $k_{u,v}$. From $k_{u,v}$, a cryptographically secure pseudo-random generator (PRG) produces a pairwise masking vector $s_{u,v} = \operatorname{PRG}(k_{u,v}) \in \mathbb{R}^d$.
@@ -24,7 +24,7 @@ where $R = 2^{32} - 1$ bounds fixed-point tensor representation. When the centra
 Thus, the aggregator recovers the exact global sum $\sum x_u$ without observing any individual $x_u$.
 
 \subsubsection{Shamir Threshold Dropout Recovery}
-To handle client dropouts without compromising active client privacy, each client $u$ splits its private key $k_{u,v}$ into $N$ secret shares using Shamir's $(k, N)$-Threshold Secret Sharing scheme over a finite field $\mathbb{F}_q$. The secret shares $s_{u,v}^{(i)}$ are distributed among participating peers prior to model transmission.
+To handle client dropouts without compromising active client privacy, each client $u$ splits its private key $k_{u,v}$ into $N$ secret shares using Shamir's $(k, N)$-Threshold Secret Sharing scheme over a finite field $\mathbb{F}_q$~\cite{bonawitz2017practical}. The secret shares $s_{u,v}^{(i)}$ are distributed among participating peers prior to model transmission.
 
 If a client $u$ drops out mid-round, surviving nodes submit their secret shares $s_{u,v}^{(i)}$ to the server once a minimum threshold of $k$ surviving clients is reached ($k \le |\mathcal{U}|$). The server reconstructs the missing pairwise secret $s_{u,v}$ using Lagrange polynomial interpolation evaluated at 0:
 \begin{equation}
@@ -40,14 +40,14 @@ Reconstructing $s_{u,v}$ enables the server to subtract client $u$'s unmatched p
 
 \subsection{Formal Privacy Accounting via R\'enyi Differential Privacy}
 
-While Secure Aggregation protects updates in transit, global model updates can still leak sensitive information across consecutive training rounds. To provide formal privacy guarantees, FedGuard incorporates Differential Privacy (DP) using the Gaussian Mechanism paired with R\'enyi Differential Privacy (RDP) accounting.
+While Secure Aggregation protects updates in transit, global model updates can still leak sensitive information across consecutive training rounds~\cite{zhu2019deep, shokri2017membership}. To provide formal privacy guarantees, FedGuard incorporates Differential Privacy (DP) using the Gaussian Mechanism paired with R\'enyi Differential Privacy (RDP) accounting~\cite{abadi2016deep, mironov2017renyi}.
 
 \subsubsection{Gradient Clipping and Noise Addition}
-Before transmission, each client bounds the influence of any single record by clipping local update tensors to a maximum $L_2$ norm threshold $C$:
+Before transmission, each client bounds the influence of any single record by clipping local update tensors to a maximum $L_2$ norm threshold $C = 1.0$:
 \begin{equation}
     \bar{\Delta}_u = \Delta_u \cdot \min\left(1, \, \frac{C}{\|\Delta_u\|_2}\right)
 \end{equation}
-Zero-mean Gaussian noise scaled by noise multiplier $\sigma$ is added to the aggregated update tensor:
+Zero-mean Gaussian noise scaled by noise multiplier $\sigma = 0.85$ is added to the aggregated update tensor:
 \begin{equation}
     \tilde{\Delta} = \sum_{u \in \mathcal{U}} \bar{\Delta}_u + \mathcal{N}\left(0, \, \sigma^2 C^2 \mathbf{I}_d\right)
 \end{equation}
@@ -63,34 +63,34 @@ For the Gaussian mechanism with scale parameter $\sigma$, the per-round RDP boun
 \begin{equation}
     \epsilon_{\text{total}}(\alpha) = \sum_{t=1}^{T} \epsilon_{\text{RDP}}^{(t)}(\alpha) = \frac{T \cdot \alpha}{2 \sigma^2}
 \end{equation}
-To express privacy guarantees in standard $(\epsilon, \delta)$-DP, we convert RDP bounds via the optimal dual optimization:
+To express privacy guarantees in standard $(\epsilon, \delta)$-DP, we convert RDP bounds via the optimal dual optimization at $\delta = 10^{-5}$~\cite{balle2020hypothesis}:
 \begin{equation}
     \epsilon(\delta) = \min_{\alpha > 1} \left\{ \frac{T \cdot \alpha}{2 \sigma^2} + \frac{\ln(1/\delta)}{\alpha - 1} \right\}
 \end{equation}
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=0.48\textwidth]{figures/fig_privacy_budget.pdf}}
-\caption{Cumulative differential privacy budget consumption $(\epsilon)$ across federated training rounds, illustrating dynamic privacy threshold enforcement.}
+\caption{Cumulative differential privacy budget consumption $(\epsilon)$ across federated training rounds for $\delta=10^{-5}, C=1.0, \sigma=0.85$, illustrating dynamic privacy threshold enforcement.}
 \label{fig:privacy_budget}
 \end{figure}
 
-As shown in Fig.~\ref{fig:privacy_budget}, the RDP accountant tracks cumulative privacy spending in real time. If $\epsilon(\delta)$ exceeds the organization's statutory privacy threshold $\epsilon_{\text{max}}$, FedGuard automatically halts training to prevent privacy budget exhaustion.
+As shown in Fig.~\ref{fig:privacy_budget}, the RDP accountant tracks cumulative privacy spending in real time. If $\epsilon(\delta)$ exceeds the organization's statutory privacy threshold $\epsilon_{\text{max}} = 5.0$, FedGuard automatically halts training to prevent privacy budget exhaustion.
 
-\subsection{Byzantine-Robust Aggregation under Heterogeneous Data}
+\subsection{Byzantine-Robust Aggregation under Heterogeneous Data (\texttt{BYZANTINE\_RESILIENT} Mode)}
 
-In real-world multi-institutional deployments, local client datasets exhibit non-Identically and Independently Distributed (non-IID) characteristics, modeled using a Dirichlet distribution $\operatorname{Dir}(\alpha)$. Under such heterogeneity, standard Federated Averaging (\texttt{FedAvg}) is exceptionally vulnerable to Byzantine attacks, where malicious nodes transmit corrupted weight updates to degrade model accuracy.
+In active threat environments where malicious clients may transmit poisoned updates~\cite{fang2020local}, FedGuard executes in \texttt{BYZANTINE\_RESILIENT} mode. In this mode, individual update vectors are unmasked to allow coordinate-wise distance metrics and sorting across local datasets exhibiting non-Identically and Independently Distributed (non-IID) characteristics, modeled using a Dirichlet distribution $\operatorname{Dir}(\alpha=0.5)$~\cite{hsu2019measuring, li2020federated}.
 
-To maintain governance integrity under adversarial conditions, FedGuard supports three Byzantine-robust aggregation primitives:
+FedGuard supports three Byzantine-robust aggregation primitives:
 \begin{enumerate}
-    \item \textbf{Trimmed Mean:} Let $x_{(1), j} \le x_{(2), j} \le \dots \le x_{(|\mathcal{U}|), j}$ denote the sorted coordinate values along dimension $j \in \{1, \dots, d\}$ across active clients. For trimming fraction $\beta \in [0, 0.5)$:
+    \item \textbf{Trimmed Mean:} Let $x_{(1), j} \le x_{(2), j} \le \dots \le x_{(|\mathcal{U}|), j}$ denote the sorted coordinate values along dimension $j \in \{1, \dots, d\}$ across active clients. For trimming fraction $\beta \in [0, 0.5)$~\cite{yin2018byzantine}:
     \begin{equation}
         \tilde{x}_j = \frac{1}{|\mathcal{U}|(1 - 2\beta)} \sum_{i = \lfloor \beta |\mathcal{U}| \rfloor + 1}^{|\mathcal{U}| - \lfloor \beta |\mathcal{U}| \rfloor} x_{(i), j}
     \end{equation}
-    \item \textbf{Coordinate-wise Median:} Each coordinate $j$ of the global update is set to the median value across all reporting clients:
+    \item \textbf{Coordinate-wise Median:} Each coordinate $j$ of the global update is set to the median value across all reporting clients~\cite{yin2018byzantine}:
     \begin{equation}
         \tilde{x}_j = \operatorname{median}\Big( \{ x_{u, j} \}_{u \in \mathcal{U}} \Big)
     \end{equation}
-    \item \textbf{Krum Aggregation:} For each client $i \in \mathcal{U}$, let $S_i \subset \mathcal{U} \setminus \{i\}$ denote the subset of $N - f - 2$ closest updates to $x_i$ in Euclidean $L_2$ distance, where $f$ is the upper bound on Byzantine clients. Krum selects update vector $x_k$ where:
+    \item \textbf{Krum Aggregation:} For each client $i \in \mathcal{U}$, let $S_i \subset \mathcal{U} \setminus \{i\}$ denote the subset of $N - f - 2$ closest updates to $x_i$ in Euclidean $L_2$ distance, where $f$ is the upper bound on Byzantine clients~\cite{blanchard2017machine}. Krum selects update vector $x_k$ where:
     \begin{equation}
         k = \arg\min_{i \in \mathcal{U}} \sum_{j \in S_i} \| x_i - x_j \|_2^2
     \end{equation}

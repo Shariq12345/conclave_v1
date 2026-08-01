@@ -1,0 +1,73 @@
+\section{Related Work \& Comparative Taxonomy}
+\label{sec:related_work}
+
+This section synthesizes recent literature (2021–2025) across federated learning frameworks, cryptographic secure aggregation, differential privacy accounting, Byzantine-robust aggregation, enterprise governance, statutory compliance, and federated identity management, highlighting the technical distinctions of the FedGuard framework.
+
+\subsection{Federated Learning Frameworks and Enterprise Platforms}
+
+The development of Federated Learning (FL) software infrastructure has evolved rapidly across academic and industrial domains. Mainstream open-source platforms—such as \textbf{Flower}~\cite{beutel2020flower}, \textbf{NVIDIA FLARE}~\cite{roth2022nvidia}, \textbf{TensorFlow Federated (TFF)}~\cite{kairouz2021advances}, \textbf{OpenFL}~\cite{foley2022openfl}, \textbf{FedML}~\cite{he2020fedml}, \textbf{Webank FATE}~\cite{yang2019fate}, and \textbf{PySyft}~\cite{ryffel2018generic}—have driven significant advances in distributed model orchestration, multi-language client execution, and hardware acceleration. 
+
+However, existing platforms exhibit structural limitations when deployed in enterprise environments. Frameworks like Flower and FedML prioritize communication compression and algorithmic scheduling, treating administrative access control and statutory policy enforcement as out-of-scope concerns. Industrial platforms such as NVIDIA FLARE and FATE incorporate transport-layer security (mTLS) and site-based authorization, but their governance modules are monolithically coupled with their proprietary job contracts and execution runtimes. Similarly, OpenFL supports hardware enclaves (Intel SGX), and PySyft enables remote tensor approvals, but neither provides an independent governance control plane capable of enforcing policy rules across heterogeneous execution backends. \textit{In contrast to these platform-specific architectures, FedGuard establishes a framework-agnostic control plane that intercepts lifecycle events via standardized hook abstractions, decoupling governance policy enforcement from the underlying machine learning execution engine.}
+
+\subsection{Secure Aggregation and Cryptographic Protocols}
+
+Cryptographic Secure Aggregation (SecAgg) prevents semi-honest parameter servers from inspecting individual client weight updates by adding zero-sum pairwise masks. Unmasked updates expose local model parameters to gradient inversion attacks that can reconstruct original training images or text tokens~\cite{zhu2019deep, geiping2020inverting}. Since the foundational threshold SecAgg protocol proposed by Bonawitz et al.~\cite{bonawitz2017practical}, recent work has focused on reducing communication and computation overhead. Variants such as SecAgg+~\cite{bell2020secagg} and LightSecAgg~\cite{so2021lightsecagg} leverage graph-based masking, secret sharing optimization, and finite-field vectorization to improve scalability under client dropouts.
+
+While these protocols significantly advance cryptographic efficiency, they treat Secure Aggregation as an isolated mathematical primitive. They lack integration with higher-level enterprise identity mechanisms, automated policy checks, or dynamic session governance. \textit{FedGuard bridges this gap by integrating X25519 Elliptic Curve Diffie-Hellman (ECDH) key agreement with Shamir's $(k, N)$-Threshold Secret Sharing directly into a policy-driven lifecycle, ensuring that ephemeral masking and dropout recovery are dynamically orchestrated based on validated compliance policies.}
+
+\subsection{Differential Privacy and Formal Budget Accounting}
+
+Differential Privacy (DP) provides rigorous mathematical bounds against membership inference and model inversion attacks in FL~\cite{dwork2014algorithmic, shokri2017membership}. To account for privacy loss across iterative training rounds, Mironov formalized R\'enyi Differential Privacy (RDP)~\cite{mironov2017renyi}, which was subsequently refined by Balle et al.~\cite{balle2020hypothesis} to provide tight conversions to standard $(\epsilon, \delta)$-DP guarantees. Centralized DP mechanisms~\cite{abadi2016deep} inject calibrated Gaussian noise into aggregated model updates, while local DP (LDP) adds noise at the client level at the cost of model utility.
+
+Existing DP implementations in FL frameworks (e.g., Opacus, TFF DP) focus primarily on noise injection during SGD updates. However, they lack organizational privacy budget tracking across multi-tenant, multi-session environments. In enterprise healthcare and finance, privacy expenditure must be tracked per organization against statutory legal bounds. \textit{FedGuard addresses this limitation by embedding a multi-order RDP moments accountant directly into the control plane, tracking cumulative privacy spending ($\epsilon, \delta$) per organization in real time and automatically enforcing dynamic session termination upon budget exhaustion.}
+
+\subsection{Byzantine-Robust Aggregation and Non-IID Heterogeneity}
+
+In multi-institutional federated learning, client nodes may transmit corrupted or malicious model updates due to hardware faults, compromised infrastructure, or active gradient poisoning attacks (e.g., sign-flipping or label-flipping)~\cite{fang2020local}. To maintain convergence under non-Identically and Independently Distributed (non-IID) data heterogeneity (typically modeled via Dirichlet distribution $\operatorname{Dir}(\alpha)$)~\cite{hsu2019measuring, li2020federated}, researchers have proposed Byzantine-robust aggregation primitives, including Krum and Multi-Krum~\cite{blanchard2017machine}, and Trimmed Mean and Coordinate-wise Median~\cite{yin2018byzantine}.
+
+A critical, unaddressed problem in the literature is the \textbf{fundamental protocol conflict between Secure Aggregation and Byzantine-robust aggregation}. Robust aggregation rules require inspecting coordinate-wise distances or sorting individual client updates, whereas SecAgg cryptographically masks individual updates. Existing literature treats these two security paradigms in isolation. \textit{FedGuard resolves this fundamental incompatibility by formalizing explicit, policy-driven security modes (\texttt{SECURE\_AGGREGATION} vs. \texttt{BYZANTINE\_RESILIENT}) within the control plane, allowing enterprise administrators to select and audit the active security posture based on session threat profiles.}
+
+\subsection{Enterprise Governance, Regulatory Compliance, and Machine Unlearning}
+
+Statutory data protection regulations—most notably the U.S. Health Insurance Portability and Accountability Act (HIPAA) Security Rule~\cite{hipaa2003security} and the EU General Data Protection Regulation (GDPR)~\cite{gdpr2016regulation}—mandate strict access control, transmission security, auditability, and participant rights. Traditional enterprise security systems rely on centralized logging, which fails to provide verifiable transparency in multi-organizational FL. Recent research explores cryptographic hash-chained ledgers and consortium blockchains to establish immutable audit trails.
+
+Furthermore, under GDPR Article 17 (Right to Erasure), FL systems must accommodate participant data revocation. Na\"ive credential eviction is insufficient because historical client updates remain embedded in global model weights. Machine unlearning frameworks, such as FedEraser~\cite{liu2021federaser} and certified unlearning architectures (SISA)~\cite{bourtoule2021machine, wang2023federated}, perform historical gradient un-rolling and checkpoint purification to eliminate data influence. \textit{FedGuard unifies these requirements by combining hardware root-of-trust verification (TPM 2.0 / TEE Remote Attestation quotes)~\cite{mo2021ppfl}, SHA-256 hash-chained audit ledgers, and a dual-action GDPR Article 17 enforcement protocol that pairs instant credential eviction with automated machine unlearning checkpoint purification.}
+
+\subsection{Comparative Taxonomy}
+
+Table~\ref{tab:framework_comparison} presents a comprehensive comparative taxonomy evaluating FedGuard against seven mainstream FL frameworks across eight key enterprise governance and security capabilities.
+
+\begin{table*}[htbp]
+\caption{Comparative Taxonomy of Federated Learning Frameworks and Governance Capabilities}
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Feature / Capability} & \textbf{Flower} & \textbf{NVIDIA FLARE} & \textbf{TFF} & \textbf{OpenFL} & \textbf{FedML} & \textbf{FATE} & \textbf{PySyft} & \textbf{FedGuard (Ours)} \\
+\hline
+Framework-Agnostic Control Plane Decoupling & No & No & No & No & No & No & No & \textbf{Yes} \\
+Automated Statutory Compliance Engine (HIPAA/GDPR) & No & No & No & No & No & No & No & \textbf{Yes} \\
+TPM 2.0 / TEE Hardware Remote Attestation & No & Partial & No & Partial (SGX) & No & No & No & \textbf{Yes} \\
+Threshold Secure Aggregation (X25519 + Shamir) & No & No & No & No & No & No & No & \textbf{Yes} \\
+R\'enyi Differential Privacy (RDP) Budget Accountant & No & Filter & Central DP & No & No & No & RDP & \textbf{Yes} \\
+Byzantine-Robust Aggregation Mode (Krum/Trimmed Mean) & Strategy & No & No & No & Strategy & No & No & \textbf{Yes} \\
+Dual Security Mode Formalization (SecAgg vs Byzantine) & No & No & No & No & No & No & No & \textbf{Yes} \\
+GDPR Article 17 Eviction + Machine Unlearning Trigger & No & No & No & No & No & No & No & \textbf{Yes} \\
+Tamper-Evident SHA-256 Hash-Chained Audit Ledger & No & File Log & No & File Log & No & File Log & Audit Log & \textbf{Yes} \\
+\hline
+\end{tabular}%
+}
+\label{tab:framework_comparison}
+\end{center}
+\end{table*}
+
+\subsection{Summary of Identified Research Gaps}
+
+Based on our synthesis of the state-of-the-art, we identify four critical research gaps in current Federated Learning systems:
+\begin{enumerate}
+    \item \textbf{Tight Coupling of Governance and ML Execution:} Existing FL frameworks entangle security policies with training execution scripts, preventing standardized policy enforcement across heterogeneous backends.
+    \item \textbf{Absence of Automated Statutory Compliance Verification:} Current systems rely on manual compliance mapping, lacking automated engines that verify hardware attestation, identity credentials, and privacy budgets against statutory mandates (HIPAA, GDPR).
+    \item \textbf{Protocol Incompatibility Between Masking and Robustness:} Literature treats Secure Aggregation and Byzantine-robust distance metrics as disjoint paradigms without formal control plane mechanisms to manage their mutual exclusivity.
+    \item \textbf{Incomplete Regulatory Revocation Protocols:} Existing revocation mechanisms perform simple network disconnections, failing to integrate real-time credential eviction with certified machine unlearning checkpoint purification under GDPR Article 17.
+\end{enumerate}
+FedGuard is specifically engineered to address these four research gaps within a unified governance architecture.

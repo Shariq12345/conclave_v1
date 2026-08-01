@@ -10,7 +10,7 @@ The system topology comprises four primary entities, as illustrated in the opera
     \item \textbf{Governance Control Plane:} The central authority managing organizational registration, security policy definition, compliance evaluation, access control authorization, and immutable audit logging.
     \item \textbf{FL Orchestrator:} The distributed machine learning orchestrator responsible for dispatching global model parameters, coordinating training rounds, and aggregating client update tensors.
     \item \textbf{Participant Nodes:} Multi-institutional entities (e.g., hospitals, financial institutions) that maintain isolated local datasets and compute infrastructure to execute local model training.
-    \item \textbf{Public Key Infrastructure (PKI):} A Certificate Authority (CA) responsible for issuing X.509 digital certificates to authenticate all network entities.
+    \item \textbf{Public Key Infrastructure (PKI) \& Attestation Service:} A Certificate Authority (CA) and TPM 2.0 / TEE Remote Attestation service responsible for verifying client hardware quotes and issuing X.509 digital certificates to authenticate all network entities.
 \end{enumerate}
 
 \subsubsection{Threat Model and Adversary Capabilities}
@@ -21,31 +21,40 @@ We consider a realistic multi-organizational threat environment characterized by
     \item \textbf{Semi-Honest (Honest-but-Curious) Aggregator:} The central FL orchestrator correctly follows the aggregation protocol but may attempt to infer private local dataset characteristics from unmasked client weight updates or alter operational logs post-hoc.
 \end{itemize}
 
-\subsection{Decoupled Control Plane Architecture}
+\subsection{Decoupled Control Plane Architecture and Governance Modes}
 
 FedGuard decouples governance enforcement from the distributed machine learning pipeline. In traditional FL implementations, training logic and network transport are tightly coupled with client execution scripts. In contrast, Conclave establishes a service-oriented governance layer that interfaces with the FL framework via hook abstractions and control plane APIs.
 
-As structured in the Conclave architecture, governance operations are partitioned into modular subsystems:
+To resolve protocol conflicts between masked tensor aggregation and raw gradient distance metrics, FedGuard formalizes three explicit operational security modes:
 \begin{itemize}
-    \item \textbf{Security \& Identity Subsystem:} Manages Mutual TLS (mTLS) handshake validation, certificate revocation lists (CRLs), and key management.
+    \item \textbf{Secure Aggregation Mode (\texttt{SECURE\_AGGREGATION}):} Enforces X25519-Shamir threshold Secure Aggregation and Rényi Differential Privacy (RDP). In this mode, individual client weight updates are cryptographically masked, protecting client data from aggregator inference while evaluating aggregate-level norm bounds.
+    \item \textbf{Byzantine-Resilient Mode (\texttt{BYZANTINE\_RESILIENT}):} Enforces coordinate-wise robust aggregation rules (Trimmed Mean, Coordinate Median, Krum) paired with RDP noise injection over unmasked updates, defending global convergence against active gradient poisoning attacks.
+    \item \textbf{Hybrid Audited Mode (\texttt{HYBRID\_AUDITED}):} Dynamically negotiates the security posture based on session threat policies and records the active operational mode in the tamper-evident audit ledger per round.
+\end{itemize}
+
+Governance operations are partitioned into modular subsystems:
+\begin{itemize}
+    \item \textbf{Security \& Identity Subsystem:} Manages Mutual TLS (mTLS) handshake validation, certificate revocation lists (CRLs), key management, and TPM 2.0 / TEE attestation.
     \item \textbf{Authorization \& Policy Engine:} Evaluates dynamic access requests using Attribute-Based Access Control (ABAC) and Role-Based Access Control (RBAC).
     \item \textbf{Compliance Verification Engine:} Executes automated static and dynamic security checks against local host environments prior to node admission.
     \item \textbf{Audit Ledger Repository:} Persists immutable operational events within a cryptographically linked SHA-256 hash chain.
 \end{itemize}
 
-\subsection{Identity Verification and Fine-Grained Access Control}
+\subsection{Hardware Root-of-Trust Identity Verification and Access Control}
 
 Security in Conclave begins with cryptographic identity establishment. All network interactions require Mutual TLS (mTLS) over TLS 1.3, ensuring mutual authentication and channel encryption between clients, the orchestrator, and the governance server.
 
-Access control authorization is governed by a hybrid RBAC/ABAC model. Access requests $\text{Req} = (S, R, A, E)$ are evaluated dynamically, where $S$ represents the requesting subject, $R$ the target resource (e.g., training session or model checkpoints), $A$ the requested action (e.g., \texttt{JOIN\_SESSION}, \texttt{SUBMIT\_UPDATE}), and $E$ environmental context. An access grant is issued if and only if:
+To prevent untrusted clients from falsifying host security states (e.g., claiming disk encryption while compromised), FedGuard incorporates TPM 2.0 / TEE Remote Attestation~\cite{mo2021ppfl}. During node registration, clients generate a cryptographically signed Attestation Quote $\mathcal{Q} = (\text{PCR}_{0..10}, \text{AK\_Sig})$. The governance server verifies $\mathcal{Q}$ against trusted PCR baseline measurements before issuing mTLS certificates.
+
+Access control authorization is governed by a hybrid RBAC/ABAC model. Access requests $\text{Req} = (S, R, A, E)$ are evaluated dynamically, where $S$ represents the requesting subject, $R$ the target resource, $A$ the requested action, and $E$ environmental context. An access grant is issued if and only if:
 \begin{equation}
     \operatorname{Authorize}(\text{Req}) = \bigwedge_{p \in \mathcal{P}} \operatorname{EvaluatePolicy}(p, S, R, A, E) = \top
 \end{equation}
-where $\mathcal{P}$ represents the active set of organizational security policies, and $\top$ denotes logical truth. Subject attributes enforce strict host verification, requiring participating nodes to prove disk encryption, hardware capability (e.g., CUDA GPU availability), and valid certificate status.
+where $\mathcal{P}$ represents the active set of organizational security policies, and $\top$ denotes logical truth.
 
-\subsection{Automated Regulatory Compliance Engine}
+\subsection{Automated Regulatory Compliance Engine \& Machine Unlearning}
 
-Conclave incorporates an automated compliance engine that maps host validation checks directly to international statutory mandates, specifically the U.S. Health Insurance Portability and Accountability Act (HIPAA) and the EU General Data Protection Regulation (GDPR). Table~\ref{tab:compliance_mapping} details the formal policy mapping implemented within the compliance evaluation engine.
+Conclave incorporates an automated compliance engine that maps host validation checks directly to statutory mandates under HIPAA~\cite{hipaa2003security} and EU GDPR~\cite{gdpr2016regulation}. Table~\ref{tab:compliance_mapping} details the formal policy mapping implemented within the compliance evaluation engine.
 
 \begin{table}[htbp]
 \caption{Statutory Regulatory Compliance Mapping in FedGuard}
@@ -60,8 +69,8 @@ HIPAA & Section 164.312(e)(1) Transmission Security & TLS 1.3 mTLS Encrypted Cha
 HIPAA & Section 164.312(b) Audit Controls & Cryptographic SHA-256 Event Logging \\
 GDPR & Article 5(1)(f) Integrity \& Confidentiality & X25519 Threshold Secure Aggregation \\
 GDPR & Article 7 Consent Management & Dynamic Participant Consent Checks \\
-GDPR & Article 17 Right to Erasure & Real-time Client Revocation \& Purge \\
-GDPR & Article 32 Security of Processing & Hardware \& Disk Encryption Attestation \\
+GDPR & Article 17 Right to Erasure & Node Eviction + Machine Unlearning Trigger \\
+GDPR & Article 32 Security of Processing & Hardware TPM 2.0 / TEE Remote Attestation \\
 \hline
 \end{tabular}%
 }
@@ -69,11 +78,15 @@ GDPR & Article 32 Security of Processing & Hardware \& Disk Encryption Attestati
 \end{center}
 \end{table}
 
-Nodes failing any regulatory check are automatically denied participation (marked as revoked) and isolated from the training session.
+Under GDPR Article 17 (Right to Erasure), when a client revokes processing consent, FedGuard executes a dual-action enforcement protocol:
+\begin{enumerate}
+    \item \textbf{Credential Eviction:} Dynamic revocation of mTLS credentials and isolation from active training rounds.
+    \item \textbf{Machine Unlearning Trigger:} Invocation of an unlearning engine that flags historical model checkpoints as dirty and initiates a checkpoint roll-back / gradient un-rolling protocol (\texttt{FedEraser} mechanism~\cite{liu2021federaser}) to mathematically eliminate the revoked client's data influence from global parameters.
+\end{enumerate}
 
 \subsection{Tamper-Evident SHA-256 Audit Ledger}
 
-To ensure auditable transparency for external regulators, Conclave implements a tamper-evident audit ledger based on cryptographic hash chaining. Each lifecycle event (e.g., node registration, policy verification, round completion, consent revocation) generates an audit event record.
+To ensure auditable transparency for external regulators, Conclave implements a tamper-evident audit ledger based on cryptographic hash chaining. Each lifecycle event (e.g., node registration, policy verification, round completion, attestation, consent revocation, unlearning trigger) generates an audit event record.
 
 The cryptographic digest $H_i \in \{0, 1\}^{256}$ of the $i$-th audit event is computed recursively as:
 \begin{equation}
