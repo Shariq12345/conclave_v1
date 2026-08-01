@@ -57,9 +57,11 @@ where $\mathbf{I}_d$ is the $d \times d$ identity matrix.
 \subsubsection{RDP Privacy Budget Composition}
 A randomized mechanism $\mathcal{M}$ satisfies $(\alpha, \epsilon_{\text{RDP}})$-R\'enyi Differential Privacy if for any neighboring datasets $D, D'$ differing on a single record, the R\'enyi divergence of order $\alpha > 1$ satisfies:
 \begin{equation}
-    D_\alpha\big( \mathcal{M}(D) \parallel \mathcal{M}(D') \big) = \frac{1}{\alpha - 1} \ln \mathbb{E}_{x \sim \mathcal{M}(D')}\left[ \left( \frac{\mathcal{M}(D)(x)}{\mathcal{M}(D')(x)} \right)^\alpha \right]
+\begin{aligned}
+    D_\alpha\big( \mathcal{M}(D) \parallel \mathcal{M}(D') \big) = \frac{1}{\alpha - 1} \ln \mathbb{E}_{x \sim \mathcal{M}(D')} \\
+    \times \left[ \left( \frac{\mathcal{M}(D)(x)}{\mathcal{M}(D')(x)} \right)^\alpha \right] \le \epsilon_{\text{RDP}}(\alpha)
+\end{aligned}
 \end{equation}
-where $D_\alpha(\cdot \parallel \cdot) \le \epsilon_{\text{RDP}}(\alpha)$.
 
 For the Gaussian mechanism with scale parameter $\sigma$, the per-round RDP bound is given by $\epsilon_{\text{RDP}}(\alpha) = \frac{\alpha}{2 \sigma^2}$. By the linear composition theorem of RDP, the cumulative privacy loss over $T$ training rounds across order $\alpha$ evaluates to:
 \begin{equation}
