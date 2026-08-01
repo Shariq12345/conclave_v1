@@ -1,0 +1,5 @@
+session,participating_orgs,policy_epsilon,alpha_consumed_eps,beta_consumed_eps,gamma_consumed_eps,governance_status,violation_event
+1,3,1.5,1.5,1.5,1.5,PASSED,None
+2,3,1.5,3.0,3.0,3.0,PASSED,None
+3,3,1.5,3.0,3.0,3.0,REJECTED_BUDGET_EXCEEDED,PRIVACY_BUDGET_CEILING_EXCEEDED
+4,3,1.5,3.0,3.0,3.0,REJECTED_BUDGET_EXCEEDED,PRIVACY_BUDGET_CEILING_EXCEEDED

@@ -101,7 +101,7 @@ class ServiceRegistry:
     def governance_service(self):
         if self._governance_service is None:
             from conclave.server.services import GovernanceService
-            self._governance_service = GovernanceService(self.client_service, self.policy_service, self.consent_service)
+            self._governance_service = GovernanceService(self.client_service, self.policy_service, self.consent_service, self.organization_service)
         return self._governance_service
 
     @property

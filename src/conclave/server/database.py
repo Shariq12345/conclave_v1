@@ -201,6 +201,9 @@ class OrganizationORM(Base):
     status = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
+    max_epsilon = Column(Float, default=5.0)
+    max_delta = Column(Float, default=1e-5)
+    consumed_epsilon = Column(Float, default=0.0)
 
     def to_domain(self) -> Organization:
         return Organization(
@@ -210,7 +213,10 @@ class OrganizationORM(Base):
             status=self.status,
             org_id=self.id,
             created_at=self.created_at,
-            updated_at=self.updated_at
+            updated_at=self.updated_at,
+            max_epsilon=self.max_epsilon if self.max_epsilon is not None else 5.0,
+            max_delta=self.max_delta if self.max_delta is not None else 1e-5,
+            consumed_epsilon=self.consumed_epsilon if self.consumed_epsilon is not None else 0.0
         )
 
     @classmethod
@@ -222,7 +228,10 @@ class OrganizationORM(Base):
             organization_type=org.organization_type,
             status=org.status,
             created_at=org.created_at,
-            updated_at=org.updated_at
+            updated_at=org.updated_at,
+            max_epsilon=org.max_epsilon,
+            max_delta=org.max_delta,
+            consumed_epsilon=org.consumed_epsilon
         )
 
 class UserORM(Base):
@@ -504,6 +513,16 @@ def init_db():
                 conn.execute(text("ALTER TABLE audit_events ADD COLUMN hash VARCHAR DEFAULT ''"))
             if 'previous_hash' not in columns_ae:
                 conn.execute(text("ALTER TABLE audit_events ADD COLUMN previous_hash VARCHAR DEFAULT ''"))
+
+        # organizations privacy budget columns migration
+        columns_org = [col['name'] for col in inspector.get_columns('organizations')]
+        with engine.begin() as conn:
+            if 'max_epsilon' not in columns_org:
+                conn.execute(text("ALTER TABLE organizations ADD COLUMN max_epsilon FLOAT DEFAULT 5.0"))
+            if 'max_delta' not in columns_org:
+                conn.execute(text("ALTER TABLE organizations ADD COLUMN max_delta FLOAT DEFAULT 1e-5"))
+            if 'consumed_epsilon' not in columns_org:
+                conn.execute(text("ALTER TABLE organizations ADD COLUMN consumed_epsilon FLOAT DEFAULT 0.0"))
     except Exception:
         pass
 

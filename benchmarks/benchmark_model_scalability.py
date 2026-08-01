@@ -230,7 +230,7 @@ def main():
     logger.info("Starting Conclave Model Size Scalability Benchmark...")
     set_reproducible_seed(args.seed)
     
-    parameter_counts = [1_000, 10_000, 100_000, 1_000_000]
+    parameter_counts = [1_000, 10_000, 100_000, 1_000_000, 11_173_962]
     results = []
     
     for P in tqdm(parameter_counts, desc="Benchmarking Model Size", unit="size"):

@@ -548,9 +548,83 @@ def generate_report(pdf_path: str):
     story.append(PageBreak())
 
     # ==========================================
-    # 10. CONCLUSION & ARCHITECTURAL SUMMARY
+    # 10. REAL PYTORCH VISION MODEL BENCHMARK (RESNET-18)
     # ==========================================
-    story.append(Paragraph("10. Conclusion & Architectural Summary", h1_style))
+    story.append(Paragraph("10. Real PyTorch Vision Model Benchmark (ResNet-18)", h1_style))
+    desc10 = (
+        "To evaluate Conclave's governance overhead on realistic deep learning workloads, "
+        "we benchmark a PyTorch ResNet-18 model (11,173,962 parameters, ~44.7 MB parameter tensor payload) "
+        "on CIFAR-10 image classification. The benchmark evaluates local epoch compute, tensor serialization, "
+        "X25519 threshold Secure Aggregation, and Rényi Differential Privacy (RDP) noise addition across FL rounds."
+    )
+    story.append(Paragraph(desc10, body_style))
+    
+    raw_b10 = load_csv_data("results/real_workload_resnet18.csv")
+    if len(raw_b10) > 1:
+        raw_b10[0] = ["Round", "Nodes", "Params", "Payload (MB)", "Compute (ms)", "Ser (ms)", "SecAgg (ms)", "DP (ms)", "Total (ms)", "Cum ε", "Acc", "Loss"]
+        t10 = Table(format_table_cells(raw_b10, table_header_style, table_cell_style), colWidths=[38, 35, 52, 55, 50, 40, 48, 40, 48, 38, 32, 28])
+        t10.setStyle(t_style)
+        story.append(t10)
+        story.append(Spacer(1, 15))
+        
+    img_real_path = "figures/real_workload_resnet18_latency.png"
+    if os.path.exists(img_real_path):
+        story.append(Image(img_real_path, width=4.8*inch, height=3.0*inch))
+    story.append(PageBreak())
+
+    # ==========================================
+    # 11. PERSISTENT DP BUDGET GOVERNANCE & ENFORCEMENT
+    # ==========================================
+    story.append(Paragraph("11. Persistent Differential Privacy Budget Governance & Enforcement", h1_style))
+    desc11 = (
+        "To prevent cumulative privacy leakage across multi-session federated learning deployments, "
+        "Conclave persists consumed Rényi Differential Privacy (RDP) budgets per organization in the database "
+        "and enforces hard privacy ceilings (ε_max). Below is the multi-session budget tracking and enforcement record:"
+    )
+    story.append(Paragraph(desc11, body_style))
+
+    raw_b11 = load_csv_data("results/privacy_governance.csv")
+    if len(raw_b11) > 1:
+        raw_b11[0] = ["Session", "Orgs", "Policy ε", "Alpha ε", "Beta ε (Ceiling: 3.0)", "Gamma ε", "Status", "Violation Event"]
+        t11 = Table(format_table_cells(raw_b11, table_header_style, table_cell_style), colWidths=[42, 35, 48, 50, 95, 50, 75, 109])
+        t11.setStyle(t_style)
+        story.append(t11)
+        story.append(Spacer(1, 15))
+
+    img_priv_gov_path = "figures/privacy_budget_enforcement.png"
+    if os.path.exists(img_priv_gov_path):
+        story.append(Image(img_priv_gov_path, width=4.8*inch, height=3.0*inch))
+    story.append(PageBreak())
+
+    # ==========================================
+    # 12. BYZANTINE FAULT TOLERANCE & POISONING ATTACK RESILIENCE
+    # ==========================================
+    story.append(Paragraph("12. Byzantine Fault Tolerance & Poisoning Attack Resilience", h1_style))
+    desc12 = (
+        "Federated networks are susceptible to compromised client nodes attempting sign-flipping gradient poisoning "
+        "and label-flipping attacks. Conclave integrates server-side robust aggregation (Trimmed Mean) combined with "
+        "real-time update divergence anomaly detection. When adversarial updates are detected, Conclave demotes node trust "
+        "status to Untrusted, isolates them from future rounds, and records a hash-chained audit event."
+    )
+    story.append(Paragraph(desc12, body_style))
+
+    raw_b12 = load_csv_data("results/byzantine_resilience.csv")
+    if len(raw_b12) > 1:
+        raw_b12[0] = ["Round", "Active", "Isolated", "FedAvg Acc", "FedAvg Loss", "Conclave Acc", "Conclave Loss", "Anomalies", "Isolation Event"]
+        t12 = Table(format_table_cells(raw_b12, table_header_style, table_cell_style), colWidths=[35, 38, 42, 55, 58, 62, 62, 48, 104])
+        t12.setStyle(t_style)
+        story.append(t12)
+        story.append(Spacer(1, 15))
+
+    img_byz_path = "figures/byzantine_resilience_accuracy.png"
+    if os.path.exists(img_byz_path):
+        story.append(Image(img_byz_path, width=4.8*inch, height=3.0*inch))
+    story.append(PageBreak())
+
+    # ==========================================
+    # 13. CONCLUSION & ARCHITECTURAL SUMMARY
+    # ==========================================
+    story.append(Paragraph("13. Conclusion & Architectural Summary", h1_style))
     conclusion_text = (
         "This performance evaluation of the Conclave platform demonstrates that privacy-preserving "
         "federated learning systems can be deployed without prohibitive overhead. "

@@ -142,8 +142,8 @@
 
 ## 🎯 Priority Checklist for Next Steps
 
-- [x] **Priority 1 (Essential):** Add a PyTorch CIFAR-10 ResNet-18 trainer with deterministic non-IID client partitions.
-- [ ] **Priority 2 (Essential):** Implement Dirichlet non-IID data partitioning in benchmarks.
-- [x] **Priority 3 (High Value):** Implement X25519 key agreement with Shamir threshold recovery for dropped-client mask cancellation (remote-node share transport remains future work).
-- [x] **Priority 4 (High Value):** Integrate Rényi Differential Privacy / Opacus accountant for tracking cumulative privacy budget $(\epsilon, \delta)$.
-- [ ] **Priority 5 (Nice-to-Have):** Add Byzantine poisoning attack simulations to demonstrate Conclave's fault tolerance and dynamic node failover.
+- [x] **Priority 1 (Essential):** Add a PyTorch CIFAR-10 ResNet-18 trainer with deterministic non-IID client partitions (`workloads.py` & `benchmark_real_workload.py`).
+- [x] **Priority 2 (Essential):** Implement Dirichlet non-IID data partitioning and GDPR revocation benchmarking (`data_partitioner.py` & `benchmark_non_iid_gdpr.py`).
+- [x] **Priority 3 (High Value):** Implement X25519 key agreement with Shamir threshold recovery for dropped-client mask cancellation (`threshold_secagg.py`).
+- [x] **Priority 4 (High Value):** Integrate Rényi Differential Privacy / Opacus accountant for tracking cumulative privacy budget $(\epsilon, \delta)$ (`privacy.py`).
+- [x] **Priority 5 (Nice-to-Have):** Add Byzantine poisoning attack simulations, robust aggregation (Trimmed Mean/Median/Krum), and dynamic node isolation (`robust_aggregation.py` & `benchmark_byzantine_resilience.py`).

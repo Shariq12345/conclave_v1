@@ -451,6 +451,9 @@ class SQLiteOrganizationRepository(OrganizationRepository):
                 orm_org.organization_type = org.organization_type
                 orm_org.status = org.status
                 orm_org.updated_at = org.updated_at
+                orm_org.max_epsilon = org.max_epsilon
+                orm_org.max_delta = org.max_delta
+                orm_org.consumed_epsilon = org.consumed_epsilon
             else:
                 orm_org = OrganizationORM.from_domain(org)
                 session.add(orm_org)

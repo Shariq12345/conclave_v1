@@ -154,7 +154,7 @@ class GovernanceValidationResult:
 
 
 class Organization:
-    def __init__(self, name: str, organization_type: str, description: str = "", status: str = "Active", org_id: str = None, created_at: datetime = None, updated_at: datetime = None):
+    def __init__(self, name: str, organization_type: str, description: str = "", status: str = "Active", org_id: str = None, created_at: datetime = None, updated_at: datetime = None, max_epsilon: float = 5.0, max_delta: float = 1e-5, consumed_epsilon: float = 0.0):
         import uuid
         self.id = org_id or str(uuid.uuid4())
         self.name = name.strip()
@@ -163,6 +163,19 @@ class Organization:
         self.status = status
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
+        self.max_epsilon = float(max_epsilon)
+        self.max_delta = float(max_delta)
+        self.consumed_epsilon = float(consumed_epsilon)
+
+    def has_available_privacy_budget(self, requested_epsilon: float) -> bool:
+        """Returns True if the requested epsilon does not exceed the remaining privacy budget."""
+        return (self.consumed_epsilon + float(requested_epsilon)) <= self.max_epsilon
+
+    def consume_privacy_budget(self, epsilon: float) -> float:
+        """Increments consumed privacy budget epsilon."""
+        self.consumed_epsilon += float(epsilon)
+        self.updated_at = datetime.now()
+        return self.consumed_epsilon
 
     def to_dict(self):
         return {
@@ -172,7 +185,11 @@ class Organization:
             "organization_type": self.organization_type,
             "status": self.status,
             "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
+            "updated_at": self.updated_at.isoformat(),
+            "max_epsilon": self.max_epsilon,
+            "max_delta": self.max_delta,
+            "consumed_epsilon": round(self.consumed_epsilon, 4),
+            "remaining_epsilon": round(max(0.0, self.max_epsilon - self.consumed_epsilon), 4)
         }
 
 

@@ -568,18 +568,79 @@ class PrivacyValidationRule(GovernanceRule):
             
         return ValidationCheck(self.name(), passed=True, message="; ".join(details))
 
+class OrganizationPrivacyBudgetValidationRule(GovernanceRule):
+    def name(self) -> str:
+        return "Organization DP Privacy Budget Ceiling Enforcement"
+
+    def validate(self, context) -> ValidationCheck:
+        session = context.session
+        policy_service = context.policy_service
+        org_service = getattr(context, "organization_service", None)
+        client_service = context.client_service
+
+        if not org_service:
+            return ValidationCheck(self.name(), passed=True, message="Organization service not bound; budget enforcement skipped.")
+
+        try:
+            policy = policy_service.get_policy(session.assigned_policy)
+        except Exception:
+            return ValidationCheck(self.name(), passed=False, message=f"Policy '{session.assigned_policy}' not found.")
+
+        if not policy.dp_enabled:
+            return ValidationCheck(self.name(), passed=True, message="Differential Privacy not enforced on assigned policy.")
+
+        errors = []
+        checked_orgs = set()
+        for client_name in session.participating_clients:
+            try:
+                # Find client organization
+                org = None
+                try:
+                    org = org_service.get_organization(client_name)
+                except Exception:
+                    pass
+
+                if not org:
+                    try:
+                        client = client_service.get_client(client_name)
+                        org_id = getattr(client, "organization_id", None)
+                        if org_id:
+                            orgs = org_service.list_organizations()
+                            for o in orgs:
+                                if o.id == org_id or o.name.lower() == client_name.lower():
+                                    org = o
+                                    break
+                    except Exception:
+                        pass
+
+                if org and org.id not in checked_orgs:
+                    checked_orgs.add(org.id)
+                    if not org.has_available_privacy_budget(policy.dp_epsilon):
+                        errors.append(
+                            f"Organization '{org.name}' privacy budget ceiling exceeded "
+                            f"(Consumed: {org.consumed_epsilon:.2f}, Max Allowed: {org.max_epsilon:.2f}, Requested: {policy.dp_epsilon:.2f})."
+                        )
+            except Exception as err:
+                pass
+
+        if errors:
+            return ValidationCheck(self.name(), passed=False, message="; ".join(errors))
+        return ValidationCheck(self.name(), passed=True, message="All participating organizations have sufficient differential privacy budget balance.")
+
 class GovernanceContext:
-    def __init__(self, session: TrainingSession, client_service: ClientService, policy_service: PolicyService, consent_service: ConsentService):
+    def __init__(self, session: TrainingSession, client_service: ClientService, policy_service: PolicyService, consent_service: ConsentService, organization_service = None):
         self.session = session
         self.client_service = client_service
         self.policy_service = policy_service
         self.consent_service = consent_service
+        self.organization_service = organization_service
 
 class GovernanceService:
-    def __init__(self, client_service: ClientService, policy_service: PolicyService, consent_service: ConsentService):
+    def __init__(self, client_service: ClientService, policy_service: PolicyService, consent_service: ConsentService, organization_service = None):
         self.client_service = client_service
         self.policy_service = policy_service
         self.consent_service = consent_service
+        self.organization_service = organization_service
         self._rules = []
         self._register_default_rules()
 
@@ -588,6 +649,7 @@ class GovernanceService:
         self._rules.append(PolicyValidationRule())
         self._rules.append(ConsentValidationRule())
         self._rules.append(PrivacyValidationRule())
+        self._rules.append(OrganizationPrivacyBudgetValidationRule())
 
     def register_rule(self, rule: GovernanceRule):
         self._rules.append(rule)
@@ -597,7 +659,8 @@ class GovernanceService:
             session=session,
             client_service=self.client_service,
             policy_service=self.policy_service,
-            consent_service=self.consent_service
+            consent_service=self.consent_service,
+            organization_service=self.organization_service
         )
         checks = []
         passed = True
@@ -1794,6 +1857,39 @@ class NodeService:
             action="reject",
             status="Success",
             message=f"Node '{node_id}' rejected by reviewer '{reviewer}'."
+        )
+        return saved
+
+    def demote_node_trust(self, node_identifier: str, trust_status: str = "Untrusted", reason: str = "") -> Node:
+        """Demotes node trust status and logs a BYZANTINE_ATTACK_DETECTED audit event."""
+        node = None
+        try:
+            node = self.get_node(node_identifier)
+        except Exception:
+            # Try searching by hostname
+            nodes = self.node_repository.find_all()
+            for n in nodes:
+                if n.hostname.lower() == node_identifier.lower() or n.node_name.lower() == node_identifier.lower():
+                    node = n
+                    break
+
+        if not node:
+            raise NodeNotFoundError(f"Node '{node_identifier}' not found for trust demotion.")
+
+        node.trust_status = trust_status
+        if trust_status in ("Untrusted", "Revoked"):
+            node.status = "Revoked"
+        from datetime import datetime
+        node.updated_at = datetime.now()
+        saved = self.node_repository.save(node)
+
+        self.audit_service.log_event(
+            event_type="BYZANTINE_ATTACK_DETECTED",
+            resource_type="Node",
+            resource_name=saved.hostname,
+            action="demote_trust",
+            status="Warning",
+            message=f"Byzantine anomaly detected on node '{saved.hostname}'! Trust status demoted to '{trust_status}'. Reason: {reason}"
         )
         return saved
 
