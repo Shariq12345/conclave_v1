@@ -196,3 +196,7 @@ Finally, we evaluate the scalability of FedGuard on large neural network archite
 \end{figure}
 
 Figure~\ref{fig:resnet18_workload} demonstrates that Secure Aggregation and RDP noise injection scale linearly with parameter dimension $d$. Even for 11.17M parameters, tensor masking and differential privacy noise addition introduce under 1.1 seconds of additional latency per round, proving that FedGuard scales efficiently to enterprise deep learning workloads.
+
+\subsection{Artifact \& Code Availability}
+
+To support independent scientific reproducibility and artifact evaluation, the complete FedGuard reference implementation (\textbf{Conclave}), automated \texttt{pytest} verification suites, Docker Compose multi-node templates, and 300+ DPI plot generation scripts (\texttt{benchmarks/generate\_publication\_figures.py}) are open-sourced under the MIT license at: \url{https://github.com/Shariq12345/conclave_v1}.
