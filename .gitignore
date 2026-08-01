@@ -8,3 +8,5 @@ __pycache__/
 scratch/
 test_*.db
 *.pyc
+*.log
+results/aggregation_times.txt
