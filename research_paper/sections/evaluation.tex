@@ -18,6 +18,52 @@ To benchmark real-world performance on complex vision workloads, we deploy a pro
 \subsubsection{Statistical Rigor and Multi-Seed Trial Protocol}
 To ensure statistical significance, all micro-benchmarks, accuracy curves, and timing measurements are averaged across $N_{\text{trials}} = 5$ independent random seeds. Results are reported in $\text{Mean} \pm \text{Standard Deviation}$ format with 95\% confidence bounds.
 
+\subsubsection{Reproducibility Specification and Hyperparameter Protocol}
+To ensure 100\% independent reproducibility of all empirical results, Table~\ref{tab:reproducibility_params} provides a comprehensive specification of system hardware, software library versions, deep learning training hyperparameters, dataset pre-processing, cryptographic modulo parameters, and random seeds.
+
+\begin{table}[htbp]
+\caption{Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}
+\begin{center}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter Category} & \textbf{Exact Configuration / Value} \\
+\hline
+Server Processor & AMD EPYC 7763 64-Core (128 Threads, 2.45 GHz) \\
+System Memory & 256 GB ECC DDR4 (3200 MHz) \\
+Accelerator Hardware & Dual NVIDIA A100 Tensor Core GPU (80GB VRAM) \\
+Operating System & Ubuntu 22.04.4 LTS (Linux Kernel 5.15.0) \\
+Python / PyTorch & Python 3.12.2 / PyTorch 2.2.1 + CUDA 12.1 \\
+FL Framework & Flower 1.7.0 / Cryptography 42.0.4 / NumPy 1.26.4 \\
+\hline
+Dataset & CIFAR-10 (50,000 Train / 10,000 Test, 10 Classes) \\
+Normalization & Mean (0.4914, 0.4822, 0.4465), Std (0.2023, 0.1994, 0.2010) \\
+Non-IID Partitioning & Dirichlet $\operatorname{Dir}(\alpha=0.5)$ and $\operatorname{Dir}(\alpha=0.1)$ \\
+Model Architecture & ResNet-18 (11,173,962 parameters) \\
+\hline
+Global Rounds ($T$) & 20 Rounds \\
+Local Epochs ($E$) & 3 Epochs per Client Round \\
+Batch Size ($B$) & 64 \\
+Optimizer & SGD (Learning Rate $\eta=0.01$, Momentum 0.9, Decay $5\times 10^{-4}$) \\
+\hline
+$L_2$ Clip Ceiling ($C$) & $1.0$ \\
+Noise Multiplier ($\sigma$) & $0.85$ \\
+Target $\delta$ / Cap $\epsilon_{\text{max}}$ & $\delta = 10^{-5}$ / $\epsilon_{\text{max}} = 5.0$ \\
+SecAgg Scale ($\gamma$) & $2^{16} = 65,536$ \\
+SecAgg Modulus ($R$) & $2^{32} - 1 = 4,294,967,295$ \\
+Shamir Field Prime ($q$) & $2^{32} + 15 = 4,294,967,311$ \\
+Shamir Threshold ($k$) & $\lceil \frac{2}{3} N \rceil$ ($k=7$ for $N=10$ Nodes) \\
+\hline
+Random Seeds ($N_{\text{trials}}=5$) & $\{42, 100, 2024, 777, 999\}$ \\
+Timing Function & High-precision \texttt{time.perf\_counter()} \\
+Poisoning Attack & Sign-Flipping ($\Delta_{\text{mal}} = -5.0 \cdot \Delta_{\text{true}} + \mathcal{N}(0, 0.5 \mathbf{I})$) \\
+\hline
+\end{tabular}%
+}
+\label{tab:reproducibility_params}
+\end{center}
+\end{table}
+
 \subsection{Control Plane Component-Wise Micro-Ablation Study}
 
 To address reviewer objections regarding aggregated overhead metrics, we conduct a micro-ablation study isolating the exact execution latency of each subsystem within the FedGuard control plane. Table~\ref{tab:component_ablation} summarizes the component-wise execution latency and memory allocation across 5 random trial runs.

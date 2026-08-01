@@ -124,36 +124,44 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Experimental Setup and Benchmark Methodology}{9}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}1}Hardware Environment and Deep Learning Workload}{9}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}2}Statistical Rigor and Multi-Seed Trial Protocol}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}3}Reproducibility Specification and Hyperparameter Protocol}{9}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Control Plane Component-Wise Micro-Ablation Study}{9}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Component-Wise Execution Latency and Memory Micro-Ablation ($\text  {Mean} \pm \text  {Std Dev}$, $N_{\text  {trials}}=5$)}}{9}{}\protected@file@percent }
-\newlabel{tab:component_ablation}{{III}{9}{}{table.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}}{9}{}\protected@file@percent }
+\newlabel{tab:reproducibility_params}{{III}{9}{}{table.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Component-Wise Execution Latency and Memory Micro-Ablation ($\text  {Mean} \pm \text  {Std Dev}$, $N_{\text  {trials}}=5$)}}{9}{}\protected@file@percent }
+\newlabel{tab:component_ablation}{{IV}{9}{}{table.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds.}}{9}{}\protected@file@percent }
 \newlabel{fig:component_ablation}{{5}{9}{}{figure.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Multi-Baseline System Overhead Comparison}{9}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces System Performance Comparison Across Security \& Governance Baselines ($\text  {Mean} \pm \text  {Std Dev}$)}}{9}{}\protected@file@percent }
-\newlabel{tab:multi_baseline}{{IV}{9}{}{table.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Node Scalability and Client Dropout Stress-Test}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Multi-Baseline System Overhead Comparison}{10}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces System Performance Comparison Across Security \& Governance Baselines ($\text  {Mean} \pm \text  {Std Dev}$)}}{10}{}\protected@file@percent }
+\newlabel{tab:multi_baseline}{{V}{10}{}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Node Scalability and Client Dropout Stress-Test}{10}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane.}}{10}{}\protected@file@percent }
 \newlabel{fig:baseline_runtime}{{6}{10}{}{figure.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Byzantine Adversary Sensitivity Matrix}{10}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname  {Dir}(\alpha =0.5)$)}}{10}{}\protected@file@percent }
-\newlabel{tab:byzantine_sensitivity}{{V}{10}{}{table.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{10}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname  {Dir}(\alpha =0.5)$)}}{10}{}\protected@file@percent }
+\newlabel{tab:byzantine_sensitivity}{{VI}{10}{}{table.6}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning.}}{10}{}\protected@file@percent }
 \newlabel{fig:byzantine_sensitivity}{{7}{10}{}{figure.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt  {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives.}}{10}{}\protected@file@percent }
-\newlabel{fig:byzantine_accuracy}{{8}{10}{}{figure.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Deep Learning Workload Scalability (ResNet-18)}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{10}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt  {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives.}}{11}{}\protected@file@percent }
+\newlabel{fig:byzantine_accuracy}{{8}{11}{}{figure.8}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery.}}{11}{}\protected@file@percent }
 \newlabel{fig:gdpr_revocation}{{9}{11}{}{figure.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Deep Learning Workload Scalability (ResNet-18)}{11}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Governance control plane latency and aggregation scaling across parameter dimensions for the PyTorch ResNet-18 deep learning architecture.}}{11}{}\protected@file@percent }
 \newlabel{fig:resnet18_workload}{{10}{11}{}{figure.10}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {VI}Operational Limitations \& Boundary Conditions}{11}{}\protected@file@percent }
 \newlabel{sec:limitations}{{VI}{11}{}{section.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Scalability Bottlenecks in Large-Scale Client Topologies}{11}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Hardware Root-of-Trust and Attestation Prerequisites}{11}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Cryptographic Computational Overhead on Massive Deep Learning Models}{11}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-D}}PKI Certificate Management and Revocation Propagation Latency}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Cryptographic Computational Overhead on Massive Deep Learning Models}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-D}}PKI Certificate Management and Revocation Propagation Latency}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-E}}Privacy Masking vs. Byzantine Robustness Operational Trade-off}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-F}}Statutory Compliance Boundaries of Machine Unlearning}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-G}}Production Orchestrator Deployment Challenges}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion \& Future Work}{12}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{VII}{12}{}{section.7}{}}
 \bibcite{rieke2020future}{1}
 \bibcite{hipaa2003security}{2}
 \bibcite{gdpr2016regulation}{3}
@@ -166,13 +174,6 @@
 \bibcite{yang2019fate}{10}
 \bibcite{ryffel2018generic}{11}
 \bibcite{mo2021ppfl}{12}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-E}}Privacy Masking vs. Byzantine Robustness Operational Trade-off}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-F}}Statutory Compliance Boundaries of Machine Unlearning}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-G}}Production Orchestrator Deployment Challenges}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion \& Future Work}{12}{}\protected@file@percent }
-\newlabel{sec:conclusion}{{VII}{12}{}{section.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-A}}Future Work}{12}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{References}{12}{}\protected@file@percent }
 \bibcite{zhu2019deep}{13}
 \bibcite{geiping2020inverting}{14}
 \bibcite{bonawitz2017practical}{15}
@@ -191,4 +192,6 @@
 \bibcite{liu2021federaser}{28}
 \bibcite{bourtoule2021machine}{29}
 \bibcite{wang2023federated}{30}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-A}}Future Work}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{13}{}\protected@file@percent }
 \gdef \@abspage@last{13}
