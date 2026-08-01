@@ -7,7 +7,7 @@ We evaluated FedGuard via \textbf{Conclave}, a production-grade reference implem
 \begin{itemize}
     \item \textbf{Minimal Operational Overhead:} FedGuard introduces an average execution latency overhead of only 7.2\% compared to ungoverned FL baselines while processing multi-million parameter deep learning workloads (PyTorch ResNet-18).
     \item \textbf{High-Throughput Audit Integrity:} The SHA-256 hash-chained audit ledger achieves sub-millisecond event append latency and rapid full-chain integrity verification.
-    \item \textbf{Adversarial Robustness:} Under non-IID statistical heterogeneity ($\text{Dir}(\alpha=0.5)$) and 20\% Byzantine gradient poisoning attacks, FedGuard's robust aggregation primitives preserve a top-1 test accuracy of 82.4\%, preventing model failure.
+    \item \textbf{Adversarial Robustness:} Under non-IID statistical heterogeneity ($\operatorname{Dir}(\alpha=0.5)$) and 20\% Byzantine gradient poisoning attacks, FedGuard's robust aggregation primitives preserve a top-1 test accuracy of 82.4\%, preserving model convergence under adversarial attacks.
     \item \textbf{Statutory Compliance Enforcement:} Real-time participant revocation under GDPR Article 17 (Right to Erasure) completes credential eviction and state isolation in under 120 ms, with model accuracy recovering within 2 training rounds.
 \end{itemize}
 
