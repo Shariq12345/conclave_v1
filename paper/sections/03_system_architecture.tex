@@ -1,0 +1,14 @@
+\section{System Architecture}
+\label{sec:system_architecture}
+
+Conclave is structured around a service-oriented architecture incorporating a RESTful API control plane, an automated governance rules engine, persistent database repositories, and a tamper-evident audit ledger.
+
+\subsection{Governance Control Plane}
+The control plane manages organizational identities, node registration tokens, and dataset consent grants. All operations execute under Role-Based Access Control (RBAC) and Attribute-Based Access Control (ABAC).
+
+\subsection{Tamper-Evident Audit Ledger}
+Every administrative action, policy validation check, and security event generates a hash-chained audit record:
+\begin{equation}
+    H_k = \text{SHA256}(H_{k-1} \parallel \text{Timestamp} \parallel \text{EventPayload})
+\end{equation}
+providing cryptographically verifiable audit trails.
