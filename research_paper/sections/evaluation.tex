@@ -45,7 +45,13 @@ SHA-256 Hash-Chain Audit Logging & 0.28 & $\pm 0.02$ & 8.6 \\
 \end{center}
 \end{table}
 
-As demonstrated in Table~\ref{tab:component_ablation}, identity verification, attestation verification, policy evaluation, and audit logging execute in sub-millisecond to low-millisecond time. Cryptographic key exchange and pairwise mask generation during Secure Aggregation account for 80.4\% of the total control plane overhead ($42.60 \pm 1.45$ ms), confirming that enterprise policy enforcement introduces negligible administrative latency.
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/fig_component_ablation.pdf}}
+\caption{Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds.}
+\label{fig:component_ablation}
+\end{figure}
+
+As demonstrated in Table~\ref{tab:component_ablation} and Fig.~\ref{fig:component_ablation}, identity verification, attestation verification, policy evaluation, and audit logging execute in sub-millisecond to low-millisecond time. Cryptographic key exchange and pairwise mask generation during Secure Aggregation account for 80.4\% of the total control plane overhead ($42.60 \pm 1.45$ ms), confirming that enterprise policy enforcement introduces negligible administrative latency.
 
 \subsection{Multi-Baseline System Overhead Comparison}
 
@@ -107,7 +113,13 @@ Coordinate Median & 83.10 $\pm$ 0.40 & 82.40 $\pm$ 0.42 & 81.60 $\pm$ 0.48 & 78.
 \end{center}
 \end{table}
 
-As shown in Table~\ref{tab:byzantine_sensitivity}, standard FedAvg suffers catastrophic accuracy collapse under poisoning, dropping to $10.20\%$ accuracy under $40\%$ Byzantine compromise. In contrast, Trimmed Mean ($\beta=0.2$) maintains $82.40\%$ accuracy at $f=20\%$ and retains $74.50\%$ accuracy even when $40\%$ of clients are malicious.
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/fig_byzantine_sensitivity.pdf}}
+\caption{Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning.}
+\label{fig:byzantine_sensitivity}
+\end{figure}
+
+As shown in Table~\ref{tab:byzantine_sensitivity} and Fig.~\ref{fig:byzantine_sensitivity}, standard FedAvg suffers catastrophic accuracy collapse under poisoning, dropping to $10.20\%$ accuracy under $40\%$ Byzantine compromise. In contrast, Trimmed Mean ($\beta=0.2$) maintains $82.40\%$ accuracy at $f=20\%$ and retains $74.50\%$ accuracy even when $40\%$ of clients are malicious.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=0.48\textwidth]{figures/fig_byzantine_accuracy.pdf}}

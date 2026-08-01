@@ -127,23 +127,23 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Control Plane Component-Wise Micro-Ablation Study}{9}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Component-Wise Execution Latency and Memory Micro-Ablation ($\text  {Mean} \pm \text  {Std Dev}$, $N_{\text  {trials}}=5$)}}{9}{}\protected@file@percent }
 \newlabel{tab:component_ablation}{{III}{9}{}{table.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds.}}{9}{}\protected@file@percent }
+\newlabel{fig:component_ablation}{{5}{9}{}{figure.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Multi-Baseline System Overhead Comparison}{9}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces System Performance Comparison Across Security \& Governance Baselines ($\text  {Mean} \pm \text  {Std Dev}$)}}{9}{}\protected@file@percent }
 \newlabel{tab:multi_baseline}{{IV}{9}{}{table.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Node Scalability and Client Dropout Stress-Test}{9}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Byzantine Adversary Sensitivity Matrix}{9}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane.}}{10}{}\protected@file@percent }
-\newlabel{fig:baseline_runtime}{{5}{10}{}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane.}}{10}{}\protected@file@percent }
+\newlabel{fig:baseline_runtime}{{6}{10}{}{figure.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Byzantine Adversary Sensitivity Matrix}{10}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname  {Dir}(\alpha =0.5)$)}}{10}{}\protected@file@percent }
 \newlabel{tab:byzantine_sensitivity}{{V}{10}{}{table.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt  {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives.}}{10}{}\protected@file@percent }
-\newlabel{fig:byzantine_accuracy}{{6}{10}{}{figure.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{10}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery.}}{10}{}\protected@file@percent }
-\newlabel{fig:gdpr_revocation}{{7}{10}{}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning.}}{10}{}\protected@file@percent }
+\newlabel{fig:byzantine_sensitivity}{{7}{10}{}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt  {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives.}}{10}{}\protected@file@percent }
+\newlabel{fig:byzantine_accuracy}{{8}{10}{}{figure.8}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Deep Learning Workload Scalability (ResNet-18)}{10}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion \& Future Work}{10}{}\protected@file@percent }
-\newlabel{sec:conclusion}{{VI}{10}{}{section.6}{}}
 \bibcite{rieke2020future}{1}
 \bibcite{hipaa2003security}{2}
 \bibcite{gdpr2016regulation}{3}
@@ -152,6 +152,14 @@
 \bibcite{beutel2020flower}{6}
 \bibcite{roth2022nvidia}{7}
 \bibcite{foley2022openfl}{8}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery.}}{11}{}\protected@file@percent }
+\newlabel{fig:gdpr_revocation}{{9}{11}{}{figure.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Governance control plane latency and aggregation scaling across parameter dimensions for the PyTorch ResNet-18 deep learning architecture.}}{11}{}\protected@file@percent }
+\newlabel{fig:resnet18_workload}{{10}{11}{}{figure.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion \& Future Work}{11}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{11}{}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Future Work}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{11}{}\protected@file@percent }
 \bibcite{he2020fedml}{9}
 \bibcite{yang2019fate}{10}
 \bibcite{ryffel2018generic}{11}
@@ -171,10 +179,6 @@
 \bibcite{blanchard2017machine}{25}
 \bibcite{yin2018byzantine}{26}
 \bibcite{fang2020local}{27}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Governance control plane latency and aggregation scaling across parameter dimensions for the PyTorch ResNet-18 deep learning architecture.}}{11}{}\protected@file@percent }
-\newlabel{fig:resnet18_workload}{{8}{11}{}{figure.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Future Work}{11}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{References}{11}{}\protected@file@percent }
 \bibcite{liu2021federaser}{28}
 \bibcite{bourtoule2021machine}{29}
 \bibcite{wang2023federated}{30}
