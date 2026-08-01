@@ -1,0 +1,21 @@
+\section{Conclusion \& Future Work}
+\label{sec:conclusion}
+
+This paper presents \textbf{FedGuard}, a policy-driven governance control plane designed to bridge the operational gap between privacy-preserving distributed machine learning and statutory enterprise compliance. By decoupling governance enforcement from FL model execution, FedGuard introduces cryptographically verifiable identity management, automated compliance mapping to international statutory regulations (HIPAA and GDPR), and tamper-evident audit logging without altering underlying aggregation pipelines.
+
+We evaluated FedGuard via \textbf{Conclave}, a production-grade reference implementation integrated with the Flower FL framework. The empirical results demonstrate that:
+\begin{itemize}
+    \item \textbf{Minimal Operational Overhead:} FedGuard introduces an average execution latency overhead of only 7.2\% compared to ungoverned FL baselines while processing multi-million parameter deep learning workloads (PyTorch ResNet-18).
+    \item \textbf{High-Throughput Audit Integrity:} The SHA-256 hash-chained audit ledger achieves sub-millisecond event append latency and rapid full-chain integrity verification.
+    \item \textbf{Adversarial Robustness:} Under non-IID statistical heterogeneity ($\text{Dir}(\alpha=0.5)$) and 20\% Byzantine gradient poisoning attacks, FedGuard's robust aggregation primitives preserve a top-1 test accuracy of 82.4\%, preventing model failure.
+    \item \textbf{Statutory Compliance Enforcement:} Real-time participant revocation under GDPR Article 17 (Right to Erasure) completes credential eviction and state isolation in under 120 ms, with model accuracy recovering within 2 training rounds.
+\end{itemize}
+
+\subsection{Future Work}
+
+Future research directions will expand FedGuard along three key axes:
+\begin{enumerate}
+    \item \textbf{Decentralized Smart Contract Ledgers:} Replacing central audit database persistence with lightweight consortium blockchain smart contracts (e.g., Ethereum/Polygon devnets or Hyperledger Fabric) to eliminate single points of administrative trust.
+    \item \textbf{Zero-Knowledge Compliance Proofs:} Integrating ZK-SNARKs (e.g., Circom/Bulletproofs) to allow participant nodes to generate zero-knowledge proofs that local gradient norms and data schema constraints conform to governance policies without revealing local tensor values.
+    \item \textbf{Large Language Model (LLM) Governance:} Extending control plane abstractions to parameter-efficient fine-tuning (PEFT/LoRA) of Transformer architectures across federated enterprise nodes.
+\end{enumerate}

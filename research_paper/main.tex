@@ -1,0 +1,65 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{FedGuard: A Governance Framework for Secure and Regulation-Compliant Federated Learning\\}
+
+\author{\IEEEauthorblockN{Shariq Shaikh}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{SIES College of Arts, Science and Commerce}\\
+Mumbai, India\\
+shariqshaikh11042004@gmail.com}
+\and
+\IEEEauthorblockN{Maya Nair}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{SIES College of Arts, Science and Commerce}\\
+Mumbai, India \\
+mayanair@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Federated Learning (FL) enables multi-institutional collaborative machine learning without centralizing raw data, offering a powerful paradigm for privacy-preserving artificial intelligence. However, mainstream FL frameworks focus predominantly on model distribution and communication efficiency, lacking systemic infrastructure for regulatory compliance, dynamic policy enforcement, participant verification, and immutable auditability required in enterprise environments (e.g., HIPAA, GDPR).
+
+This paper introduces \textbf{FedGuard}, a policy-driven governance control plane designed to enforce regulatory compliance, security policies, and auditable operational guarantees across the federated learning lifecycle. To demonstrate feasibility, we present \textbf{Conclave}, a production-grade reference implementation integrating FedGuard with the Flower FL framework. Conclave incorporates X25519-based threshold Secure Aggregation with Shamir secret sharing for dropout-resilient mask cancellation, Rényi Differential Privacy (RDP) accounting for cumulative budget tracking, mTLS identity verification with fine-grained access control (RBAC/ABAC), and SHA-256 hash-chained tamper-evident audit ledgers. Furthermore, it supports Byzantine-robust aggregation algorithms (Trimmed Mean, Median, Krum) to mitigate adversarial poisoning attacks under realistic non-IID data distributions (Dirichlet $\alpha=0.5$).
+
+Empirical evaluation on deep learning workloads (ResNet-18 on CIFAR-10) demonstrates that FedGuard guarantees end-to-end policy compliance, real-time participant revocation, and tamper-proof auditability while incurring minimal computational and communication overhead relative to ungoverned FL baselines. Conclave provides a practical and extensible foundation for trustworthy enterprise federated learning in strictly regulated domains.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Federated Learning, Governance, Compliance, Auditability, Policy Enforcement, Enterprise AI
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+
+\section{Related Work}
+
+\subsection{Federated Learning}
+\subsection{Existing Frameworks}
+\subsection{Security and Privacy}
+\subsection{Governance and Compliance}
+\subsection{Research Gap}
+
+\input{sections/architecture}
+
+\input{sections/crypto_privacy}
+
+\input{sections/evaluation}
+
+\input{sections/conclusion}
+
+\end{document}
+
+
+
+

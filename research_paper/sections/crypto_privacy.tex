@@ -1,0 +1,98 @@
+\section{Cryptographic Security \& Privacy Protocols}
+\label{sec:crypto_privacy}
+
+This section details the cryptographic and mathematical mechanisms incorporated within FedGuard to ensure privacy preservation, client confidentiality, and adversarial robustness. The dual-layer security framework combines \textbf{Threshold Secure Aggregation} for masking model updates against server inference, \textbf{R\'enyi Differential Privacy (RDP)} accounting for formal privacy budget tracking, and \textbf{Byzantine-Robust Aggregation} to withstand gradient poisoning under non-IID data distributions.
+
+\subsection{Threshold Secure Aggregation Protocol}
+
+To prevent a semi-honest aggregator from inspecting individual client update tensors $x_u \in \mathbb{R}^d$, FedGuard integrates a threshold Secure Aggregation protocol based on pairwise pseudo-random masking and key sharing.
+
+\subsubsection{Key Agreement and Mask Generation}
+During round setup, each pair of participating clients $(u, v)$ with $u < v$ executes an X25519 Elliptic Curve Diffie-Hellman (ECDH) key exchange to derive a shared secret key $k_{u,v}$. From $k_{u,v}$, a cryptographically secure pseudo-random generator (PRG) produces a pairwise masking vector $s_{u,v} = \operatorname{PRG}(k_{u,v}) \in \mathbb{R}^d$.
+
+Each client $u \in \mathcal{U}$ obfuscates its local model update $x_u$ by applying pairwise masks modulo $R$:
+\begin{equation}
+    y_u = x_u + \sum_{v > u} \operatorname{PRG}(s_{u,v}) - \sum_{v < u} \operatorname{PRG}(s_{v,u}) \pmod R
+\end{equation}
+where $R = 2^{32} - 1$ bounds fixed-point tensor representation. When the central orchestrator aggregates updates across the active set of clients $\mathcal{U}$, pairwise masks cancel out identically:
+\begin{equation}
+\begin{aligned}
+    \sum_{u \in \mathcal{U}} y_u &= \sum_{u \in \mathcal{U}} x_u + \sum_{u \in \mathcal{U}} \left( \sum_{v > u} \operatorname{PRG}(s_{u,v}) - \sum_{v < u} \operatorname{PRG}(s_{v,u}) \right) \\
+    &\equiv \sum_{u \in \mathcal{U}} x_u \pmod R
+\end{aligned}
+\end{equation}
+Thus, the aggregator recovers the exact global sum $\sum x_u$ without observing any individual $x_u$.
+
+\subsubsection{Shamir Threshold Dropout Recovery}
+To handle client dropouts without compromising active client privacy, each client $u$ splits its private key $k_{u,v}$ into $N$ secret shares using Shamir's $(k, N)$-Threshold Secret Sharing scheme over a finite field $\mathbb{F}_q$. The secret shares $s_{u,v}^{(i)}$ are distributed among participating peers prior to model transmission.
+
+If a client $u$ drops out mid-round, surviving nodes submit their secret shares $s_{u,v}^{(i)}$ to the server once a minimum threshold of $k$ surviving clients is reached ($k \le |\mathcal{U}|$). The server reconstructs the missing pairwise secret $s_{u,v}$ using Lagrange polynomial interpolation evaluated at 0:
+\begin{equation}
+    s_{u,v} = \sum_{i=1}^{k} s_{u,v}^{(i)} \prod_{\substack{j=1 \\ j \neq i}}^{k} \frac{-x_j}{x_i - x_j} \pmod q
+\end{equation}
+Reconstructing $s_{u,v}$ enables the server to subtract client $u$'s unmatched pairwise masks from the aggregate sum without compromising the secret keys of active, surviving clients.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/fig_secagg_overhead.pdf}}
+\caption{Execution latency of threshold Secure Aggregation as a function of model parameter dimension, demonstrating efficient key agreement and masking performance.}
+\label{fig:secagg_overhead}
+\end{figure}
+
+\subsection{Formal Privacy Accounting via R\'enyi Differential Privacy}
+
+While Secure Aggregation protects updates in transit, global model updates can still leak sensitive information across consecutive training rounds. To provide formal privacy guarantees, FedGuard incorporates Differential Privacy (DP) using the Gaussian Mechanism paired with R\'enyi Differential Privacy (RDP) accounting.
+
+\subsubsection{Gradient Clipping and Noise Addition}
+Before transmission, each client bounds the influence of any single record by clipping local update tensors to a maximum $L_2$ norm threshold $C$:
+\begin{equation}
+    \bar{\Delta}_u = \Delta_u \cdot \min\left(1, \, \frac{C}{\|\Delta_u\|_2}\right)
+\end{equation}
+Zero-mean Gaussian noise scaled by noise multiplier $\sigma$ is added to the aggregated update tensor:
+\begin{equation}
+    \tilde{\Delta} = \sum_{u \in \mathcal{U}} \bar{\Delta}_u + \mathcal{N}\left(0, \, \sigma^2 C^2 \mathbf{I}_d\right)
+\end{equation}
+where $\mathbf{I}_d$ is the $d \times d$ identity matrix.
+
+\subsubsection{RDP Privacy Budget Composition}
+A randomized mechanism $\mathcal{M}$ satisfies $(\alpha, \epsilon_{\text{RDP}})$-R\'enyi Differential Privacy if for any neighboring datasets $D, D'$ differing on a single record, the R\'enyi divergence of order $\alpha > 1$ satisfies:
+\begin{equation}
+    D_\alpha\big( \mathcal{M}(D) \parallel \mathcal{M}(D') \big) = \frac{\ln \int \frac{\mathcal{M}(D)(x)^\alpha}{\mathcal{M}(D')(x)^{\alpha - 1}} \, dx}{\alpha - 1} \le \epsilon_{\text{RDP}}
+\end{equation}
+
+For the Gaussian mechanism with scale parameter $\sigma$, the per-round RDP bound is given by $\epsilon_{\text{RDP}}(\alpha) = \frac{\alpha}{2 \sigma^2}$. By the linear composition theorem of RDP, the cumulative privacy loss over $T$ training rounds across order $\alpha$ evaluates to:
+\begin{equation}
+    \epsilon_{\text{total}}(\alpha) = \sum_{t=1}^{T} \epsilon_{\text{RDP}}^{(t)}(\alpha) = \frac{T \cdot \alpha}{2 \sigma^2}
+\end{equation}
+To express privacy guarantees in standard $(\epsilon, \delta)$-DP, we convert RDP bounds via the optimal dual optimization:
+\begin{equation}
+    \epsilon(\delta) = \min_{\alpha > 1} \left\{ \frac{T \cdot \alpha}{2 \sigma^2} + \frac{\ln(1/\delta)}{\alpha - 1} \right\}
+\end{equation}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/fig_privacy_budget.pdf}}
+\caption{Cumulative differential privacy budget consumption $(\epsilon)$ across federated training rounds, illustrating dynamic privacy threshold enforcement.}
+\label{fig:privacy_budget}
+\end{figure}
+
+As shown in Fig.~\ref{fig:privacy_budget}, the RDP accountant tracks cumulative privacy spending in real time. If $\epsilon(\delta)$ exceeds the organization's statutory privacy threshold $\epsilon_{\text{max}}$, FedGuard automatically halts training to prevent privacy budget exhaustion.
+
+\subsection{Byzantine-Robust Aggregation under Heterogeneous Data}
+
+In real-world multi-institutional deployments, local client datasets exhibit non-Identically and Independently Distributed (non-IID) characteristics, modeled using a Dirichlet distribution $\operatorname{Dir}(\alpha)$. Under such heterogeneity, standard Federated Averaging (\texttt{FedAvg}) is exceptionally vulnerable to Byzantine attacks, where malicious nodes transmit corrupted weight updates to degrade model accuracy.
+
+To maintain governance integrity under adversarial conditions, FedGuard supports three Byzantine-robust aggregation primitives:
+\begin{enumerate}
+    \item \textbf{Trimmed Mean:} Let $x_{(1), j} \le x_{(2), j} \le \dots \le x_{(|\mathcal{U}|), j}$ denote the sorted coordinate values along dimension $j \in \{1, \dots, d\}$ across active clients. For trimming fraction $\beta \in [0, 0.5)$:
+    \begin{equation}
+        \tilde{x}_j = \frac{1}{|\mathcal{U}|(1 - 2\beta)} \sum_{i = \lfloor \beta |\mathcal{U}| \rfloor + 1}^{|\mathcal{U}| - \lfloor \beta |\mathcal{U}| \rfloor} x_{(i), j}
+    \end{equation}
+    \item \textbf{Coordinate-wise Median:} Each coordinate $j$ of the global update is set to the median value across all reporting clients:
+    \begin{equation}
+        \tilde{x}_j = \operatorname{median}\Big( \{ x_{u, j} \}_{u \in \mathcal{U}} \Big)
+    \end{equation}
+    \item \textbf{Krum Aggregation:} For each client $i \in \mathcal{U}$, let $S_i \subset \mathcal{U} \setminus \{i\}$ denote the subset of $N - f - 2$ closest updates to $x_i$ in Euclidean $L_2$ distance, where $f$ is the upper bound on Byzantine clients. Krum selects update vector $x_k$ where:
+    \begin{equation}
+        k = \arg\min_{i \in \mathcal{U}} \sum_{j \in S_i} \| x_i - x_j \|_2^2
+    \end{equation}
+\end{enumerate}
+By combining robust aggregation rules with non-IID data partitioning ($\alpha=0.5$), FedGuard mitigates sign-flipping and gradient poisoning attacks while preserving global model convergence.
