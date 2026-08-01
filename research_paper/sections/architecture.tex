@@ -74,11 +74,11 @@ Security in Conclave begins with cryptographic identity establishment. All netwo
 
 To prevent untrusted clients from falsifying host security states (e.g., claiming disk encryption while compromised), FedGuard incorporates TPM 2.0 / TEE Remote Attestation~\cite{mo2021ppfl}. During node registration, clients generate a cryptographically signed Attestation Quote $\mathcal{Q} = (\text{PCR}_{0..10}, \text{AK\_Sig})$. The governance server verifies $\mathcal{Q}$ against trusted PCR baseline measurements before issuing mTLS certificates.
 
-Access control authorization is governed by a hybrid RBAC/ABAC model. Access requests $\text{Req} = (S, R, A, E)$ are evaluated dynamically, where $S$ represents the requesting subject, $R$ the target resource, $A$ the requested action, and $E$ environmental context. An access grant is issued if and only if:
+Access control authorization is governed by a hybrid RBAC/ABAC model. Access requests $\text{Req} = (S, R, A, E) \in \mathcal{S} \times \mathcal{R} \times \mathcal{A} \times \mathcal{E}$ are evaluated dynamically, where $S$ represents the requesting subject, $R$ the target resource, $A$ the requested action, and $E$ environmental context. An access grant is issued if and only if:
 \begin{equation}
     \operatorname{Authorize}(\text{Req}) = \bigwedge_{p \in \mathcal{P}} \operatorname{EvaluatePolicy}(p, S, R, A, E) = \top
 \end{equation}
-where $\mathcal{P}$ represents the active set of organizational security policies, and $\top$ denotes logical truth.
+where $\mathcal{P}$ represents the active set of organizational security policies, $\operatorname{EvaluatePolicy}: \mathcal{P} \times \text{Req} \to \{\bot, \top\}$, and $\top$ denotes logical truth.
 
 \subsection{Automated Regulatory Compliance Engine \& Machine Unlearning}
 
@@ -120,7 +120,7 @@ The cryptographic digest $H_i \in \{0, 1\}^{256}$ of the $i$-th audit event is c
 \begin{equation}
     H_i = \operatorname{SHA-256}\Big( H_{i-1} \mathbin{\Vert} T_i \mathbin{\Vert} E_i \mathbin{\Vert} \operatorname{canon}(\mathsf{Payload}_i) \Big)
 \end{equation}
-where $H_{i-1}$ is the cryptographic hash of the preceding event, $T_i \in \mathbb{R}^+$ is the UTC timestamp, $E_i \in \Sigma^*$ is the event identifier string, $\operatorname{canon}(\cdot)$ denotes canonical JSON serialization, and $\mathbin{\Vert}$ represents byte concatenation. The genesis block is anchored at $H_0 = \operatorname{SHA-256}(\text{``GENESIS\_CONCLAVE\_GOVERNANCE''})$.
+where $H_{i-1} \in \{0,1\}^{256}$ is the cryptographic hash digest of the preceding event, $T_i \in \mathbb{R}^+$ is the UTC epoch timestamp, $E_i \in \Sigma^*$ is the event identifier string, $\operatorname{canon}: \mathcal{M} \to \Sigma^*$ denotes canonical JSON string serialization (RFC 8785), and $\mathbin{\Vert}$ represents binary byte concatenation. The genesis block is anchored at $H_0 = \operatorname{SHA-256}(\text{``GENESIS\_CONCLAVE\_GOVERNANCE''})$.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=0.48\textwidth]{figures/fig_audit_ledger_throughput.pdf}}
