@@ -187,7 +187,7 @@ If you use **FedGuard** or **Conclave** in your research, please cite our paper:
 @article{shaikh2026fedguard,
   title={FedGuard: A Governance Framework for Secure and Regulation-Compliant Federated Learning},
   author={Shaikh, Shariq and Nair, Maya},
-  journal={IEEE Transactions on Dependable and Secure Computing (TDSC)},
+  journal={},
   year={2026},
   note={Code available at: https://github.com/Shariq12345/conclave_v1}
 }
