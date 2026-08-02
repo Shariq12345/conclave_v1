@@ -128,16 +128,17 @@
 \@writefile{toc}{\contentsline {section}{\numberline {V}Empirical Evaluation \& Benchmarking}{9}{section.5}\protected@file@percent }
 \newlabel{sec:evaluation}{{V}{9}{Empirical Evaluation \& Benchmarking}{section.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Experimental Setup and Benchmark Methodology}{9}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}1}Hardware Environment and Deep Learning Workload}{9}{subsubsection.5.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}2}Statistical Rigor and Multi-Seed Trial Protocol}{9}{subsubsection.5.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}3}Reproducibility Specification and Hyperparameter Protocol}{9}{subsubsection.5.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Control Plane Component-Wise Micro-Ablation Study}{9}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}1}Hardware Environment, Network Isolation, and Container Setup}{9}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}2}CPU Frequency Locking and Micro-Benchmark Timing Isolation}{9}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}3}Deterministic Pseudorandom Seed Protocol}{9}{subsubsection.5.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}4}Reproducibility Specification and Hyperparameter Protocol}{9}{subsubsection.5.1.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}}{9}{table.3}\protected@file@percent }
 \newlabel{tab:reproducibility_params}{{III}{9}{Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Control Plane Component-Wise Micro-Ablation Study}{9}{subsection.5.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Component-Wise Execution Latency and Memory Micro-Ablation ($\text  {Mean} \pm \text  {Std Dev}$, $N_{\text  {trials}}=5$)}}{9}{table.4}\protected@file@percent }
 \newlabel{tab:component_ablation}{{IV}{9}{Component-Wise Execution Latency and Memory Micro-Ablation ($\text {Mean} \pm \text {Std Dev}$, $N_{\text {trials}}=5$)}{table.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds.}}{9}{figure.5}\protected@file@percent }
-\newlabel{fig:component_ablation}{{5}{9}{Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds.}}{10}{figure.5}\protected@file@percent }
+\newlabel{fig:component_ablation}{{5}{10}{Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds}{figure.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Multi-Baseline System Overhead Comparison}{10}{subsection.5.3}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces System Performance Comparison Across Security \& Governance Baselines ($\text  {Mean} \pm \text  {Std Dev}$)}}{10}{table.5}\protected@file@percent }
 \newlabel{tab:multi_baseline}{{V}{10}{System Performance Comparison Across Security \& Governance Baselines ($\text {Mean} \pm \text {Std Dev}$)}{table.5}{}}
@@ -149,9 +150,9 @@
 \newlabel{tab:byzantine_sensitivity}{{VI}{10}{Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname {Dir}(\alpha =0.5)$)}{table.6}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning.}}{10}{figure.7}\protected@file@percent }
 \newlabel{fig:byzantine_sensitivity}{{7}{10}{Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning}{figure.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{10}{subsection.5.6}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt  {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives.}}{11}{figure.8}\protected@file@percent }
 \newlabel{fig:byzantine_accuracy}{{8}{11}{Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives}{figure.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{11}{subsection.5.6}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery.}}{11}{figure.9}\protected@file@percent }
 \newlabel{fig:gdpr_revocation}{{9}{11}{Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery}{figure.9}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Deep Learning Workload Scalability (ResNet-18)}{11}{subsection.5.7}\protected@file@percent }
@@ -166,18 +167,21 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Hardware Root-of-Trust and Attestation Prerequisites}{12}{subsection.6.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Cryptographic Computational Overhead on Massive Deep Learning Models}{12}{subsection.6.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-D}}PKI Certificate Management and Revocation Propagation Latency}{12}{subsection.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-E}}Privacy Masking vs. Byzantine Robustness Operational Trade-off}{12}{subsection.6.5}\protected@file@percent }
 \citation{liu2021federaser}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-E}}Privacy Masking vs. Byzantine Robustness Operational Trade-off}{13}{subsection.6.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-F}}Statutory Compliance Boundaries of Machine Unlearning}{13}{subsection.6.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-G}}Orchestrator Integration and Deployment Challenges}{13}{subsection.6.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion \& Future Work}{13}{section.7}\protected@file@percent }
 \newlabel{sec:conclusion}{{VII}{13}{Conclusion \& Future Work}{section.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-A}}Future Work}{13}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  A: Formal Cryptographic Security Reduction \& Privacy Proof}{13}{section*.1}\protected@file@percent }
-\newlabel{sec:appendix_security_proof}{{A}{13}{\appendixname \nobreakspace \thesectiondis \\* Formal Cryptographic Security Reduction \& Privacy Proof}{section*.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {A-A}}Hardness Assumption: Decisional Diffie-Hellman (DDH)}{13}{subsection.Appendix.A.1}\protected@file@percent }
 \bibcite{rieke2020future}{1}
 \bibcite{hipaa2003security}{2}
+\@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  A: Formal Cryptographic Security Reduction \& Privacy Proof}{14}{section*.1}\protected@file@percent }
+\newlabel{sec:appendix_security_proof}{{A}{14}{\appendixname \nobreakspace \thesectiondis \\* Formal Cryptographic Security Reduction \& Privacy Proof}{section*.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {A-A}}Hardness Assumption: Decisional Diffie-Hellman (DDH)}{14}{subsection.Appendix.A.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {A-B}}Formal Security Game $\operatorname  {Exp}_{\mathcal  {A}}^{\text  {SecAgg}}(\lambda )$}{14}{subsection.Appendix.A.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {A-C}}Main Security Theorem and Proof}{14}{subsection.Appendix.A.3}\protected@file@percent }
+\newlabel{thm:secagg_privacy}{{1}{14}{Threshold Secure Aggregation Privacy}{subsection.Appendix.A.3}{}}
 \bibcite{gdpr2016regulation}{3}
 \bibcite{mcmahan2017communication}{4}
 \bibcite{kairouz2021advances}{5}
@@ -187,10 +191,6 @@
 \bibcite{he2020fedml}{9}
 \bibcite{yang2019fate}{10}
 \bibcite{ryffel2018generic}{11}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {A-B}}Formal Security Game $\operatorname  {Exp}_{\mathcal  {A}}^{\text  {SecAgg}}(\lambda )$}{14}{subsection.Appendix.A.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {A-C}}Main Security Theorem and Proof}{14}{subsection.Appendix.A.3}\protected@file@percent }
-\newlabel{thm:secagg_privacy}{{1}{14}{Threshold Secure Aggregation Privacy}{subsection.Appendix.A.3}{}}
-\@writefile{toc}{\contentsline {section}{References}{14}{section*.2}\protected@file@percent }
 \bibcite{mo2021ppfl}{12}
 \bibcite{zhu2019deep}{13}
 \bibcite{geiping2020inverting}{14}
@@ -210,4 +210,5 @@
 \bibcite{liu2021federaser}{28}
 \bibcite{bourtoule2021machine}{29}
 \bibcite{wang2023federated}{30}
+\@writefile{toc}{\contentsline {section}{References}{15}{section*.2}\protected@file@percent }
 \gdef \@abspage@last{15}

@@ -5,35 +5,36 @@ This section presents an exhaustive quantitative evaluation of FedGuard. To sati
 
 \subsection{Experimental Setup and Benchmark Methodology}
 
-\subsubsection{Hardware Environment and Deep Learning Workload}
-All experiments were conducted on a commodity benchmark host equipped with an 8-Core x86\_64 Processor (2.4 GHz base clock), 16 GB System Memory, running Python 3.12.2 under Windows 11 / Linux x86\_64. Client nodes operate as isolated Python processes communicating over TLS 1.3 encrypted channels.
+\subsubsection{Hardware Environment, Network Isolation, and Container Setup}
+All primary empirical benchmarks were conducted on a dedicated commodity benchmark host equipped with an 8-Core x86\_64 Processor (2.4 GHz base clock), 16 GB System Memory, running Python 3.12.2 under Windows 11 / Linux x86\_64. To model multi-institutional deployment topologies, client nodes operate under two distinct execution environments: (1) \emph{Local Process Interconnect}, wherein $N$ client nodes execute as isolated Python runtime processes communicating over localhost TLS 1.3 socket pairs, and (2) \emph{Docker Container Network Virtualization}, wherein nodes are deployed as isolated Docker containers (\texttt{Dockerfile.node} and \texttt{Dockerfile.server}) communicating over a virtual bridge network with simulated cross-silo network latency (10 ms RTT and 1 Gbps bandwidth limits).
 
-To benchmark real-world performance on complex vision workloads, we deploy an experimental PyTorch deep learning pipeline:
-\begin{itemize}
-    \item \textbf{Model Architecture:} ResNet-18 convolutional neural network containing 11.17 million trainable parameters ($d \approx 11.17 \times 10^6$).
-    \item \textbf{Dataset \& Partitioning:} CIFAR-10 dataset partitioned deterministically across nodes using a Dirichlet distribution $\operatorname{Dir}(\alpha=0.5)$ to model realistic non-IID statistical heterogeneity, as well as extreme skew $\operatorname{Dir}(\alpha=0.1)$.
-    \item \textbf{Differential Privacy Parameters:} $L_2$ norm gradient clipping ceiling $C = 1.0$, noise multiplier $\sigma = 0.85$, target failure rate $\delta = 10^{-5}$, and cumulative privacy budget threshold $\epsilon_{\text{max}} = 5.0$.
-\end{itemize}
+\subsubsection{CPU Frequency Locking and Micro-Benchmark Timing Isolation}
+To eliminate OS scheduling jitter, dynamic thermal throttling, and frequency scaling artifacts (e.g., Intel SpeedStep / AMD Cool'n'Quiet), the host CPU governor was locked to a fixed high-performance frequency policy (2.4 GHz static clock). Micro-benchmark timing measurements utilize Python's high-precision monotonic clock (\texttt{time.perf\_counter()}), with warm-up iterations executed prior to recording to ensure CPU instruction cache stability and exclude initial CUDA/PyTorch runtime initialization overhead.
 
-\subsubsection{Statistical Rigor and Multi-Seed Trial Protocol}
-To ensure statistical significance, all micro-benchmarks, accuracy curves, and timing measurements are averaged across $N_{\text{trials}} = 5$ independent random seeds. Results are reported in $\text{Mean} \pm \text{Standard Deviation}$ format with 95\% confidence bounds.
+\subsubsection{Deterministic Pseudorandom Seed Protocol}
+Full experimental determinism across dataset partitioning, neural network weight initialization, Gaussian DP noise sampling, and Shamir secret share generation is enforced by programmatically seeding all pseudorandom number generators (PRNGs). Specifically, each evaluation trial initializes NumPy (\texttt{np.random.default\_rng(seed)}), PyTorch (\texttt{torch.manual\_seed(seed)} and \texttt{torch.cuda.manual\_seed\_all(seed)}), and Python's native \texttt{random} module across five fixed seed values ($N_{\text{trials}}=5$, $\text{seeds} \in \{42, 100, 2024, 777, 999\}$).
 
 \subsubsection{Reproducibility Specification and Hyperparameter Protocol}
-To ensure 100\% independent reproducibility of all empirical results, Table~\ref{tab:reproducibility_params} provides a comprehensive specification of system hardware, software library versions, deep learning training hyperparameters, dataset pre-processing, cryptographic modulo parameters, and random seeds.
+Table~\ref{tab:reproducibility_params} provides the complete specification of execution environments, CPU power settings, library versions, training hyperparameters, cryptographic parameters, and seed configurations.
 
 \begin{table}[htbp]
 \caption{Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}
 \begin{center}
 \resizebox{\columnwidth}{!}{%
+\small
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Parameter Category} & \textbf{Exact Configuration / Value} \\
 \hline
-Server Processor & Standard 8-Core x86\_64 CPU (2.4 GHz Base Clock) \\
+Server Processor & Standard 8-Core x86\_64 CPU (2.4 GHz Static Clock) \\
+CPU Governor & Fixed High-Performance Policy (Frequency Scaling Disabled) \\
 System Memory & 16 GB System Memory \\
-Execution Host & Commodity Workstation (Process Interconnect) \\
-Operating System & Windows 11 / Linux x86\_64 \\
-Python / PyTorch & Python 3.12.2 / PyTorch 2.2.1 \\
+Execution Host & Single-Host Process Interconnect \& Docker Container Bridge \\
+Network Topology & Localhost TLS 1.3 \& Simulated 10 ms RTT / 1 Gbps Link \\
+Operating System & Windows 11 / Linux x86\_64 (Kernel 6.5) \\
+Python / PyTorch & Python 3.12.2 / PyTorch 2.2.1 (CUDA 12.1) \\
 FL Framework & Flower 1.7.0 / Cryptography 42.0.4 / NumPy 1.26.4 \\
 \hline
 Dataset & CIFAR-10 (50,000 Train / 10,000 Test, 10 Classes) \\
@@ -54,8 +55,9 @@ SecAgg Modulus ($R$) & $2^{32} - 1 = 4,294,967,295$ \\
 Shamir Field Prime ($q$) & $2^{32} + 15 = 4,294,967,311$ \\
 Shamir Threshold ($k$) & $\lceil \frac{2}{3} N \rceil$ ($k=7$ for $N=10$ Nodes) \\
 \hline
+PRNG Determinism & Fixed Seeding (\texttt{np.random}, \texttt{torch.manual\_seed}) \\
 Random Seeds ($N_{\text{trials}}=5$) & $\{42, 100, 2024, 777, 999\}$ \\
-Timing Function & High-precision \texttt{time.perf\_counter()} \\
+Timing Function & High-precision \texttt{time.perf\_counter()} (Monotonic) \\
 Poisoning Attack & Sign-Flipping ($\Delta_{\text{mal}} = -5.0 \cdot \Delta_{\text{true}} + \mathcal{N}(0, 0.5 \mathbf{I})$) \\
 \hline
 \end{tabular}%
