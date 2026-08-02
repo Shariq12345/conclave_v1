@@ -23,12 +23,8 @@ To ensure 100\% independent reproducibility of all empirical results, Table~\ref
 
 \begin{table}[htbp]
 \caption{Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}
-\label{tab:reproducibility_params}
 \begin{center}
 \resizebox{\columnwidth}{!}{%
-\small
-\renewcommand{\arraystretch}{1.15}
-\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Parameter Category} & \textbf{Exact Configuration / Value} \\
@@ -64,6 +60,7 @@ Poisoning Attack & Sign-Flipping ($\Delta_{\text{mal}} = -5.0 \cdot \Delta_{\tex
 \hline
 \end{tabular}%
 }
+\label{tab:reproducibility_params}
 \end{center}
 \end{table}
 
@@ -73,15 +70,11 @@ To address reviewer objections regarding aggregated overhead metrics, we conduct
 
 \begin{table}[htbp]
 \caption{Component-Wise Execution Latency and Memory Micro-Ablation ($\text{Mean} \pm \text{Std Dev}$, $N_{\text{trials}}=5$)}
-\label{tab:component_ablation}
 \begin{center}
 \resizebox{\columnwidth}{!}{%
-\small
-\renewcommand{\arraystretch}{1.15}
-\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|c|c|c|}
 \hline
-\textbf{Control Plane Subsystem} & \textbf{Latency (ms)} & \textbf{Std Dev (ms)} & \textbf{Memory (KB)} \\
+\textbf{Control Plane Subsystem} & \textbf{Mean Latency (ms)} & \textbf{Std Dev (ms)} & \textbf{Memory (KB)} \\
 \hline
 mTLS 1.3 Identity Verification & 0.42 & $\pm 0.03$ & 12.4 \\
 TPM 2.0 / TEE Quote Verification & 1.18 & $\pm 0.08$ & 34.8 \\
@@ -94,6 +87,7 @@ SHA-256 Hash-Chain Audit Logging & 0.28 & $\pm 0.02$ & 8.6 \\
 \hline
 \end{tabular}%
 }
+\label{tab:component_ablation}
 \end{center}
 \end{table}
 
@@ -111,15 +105,11 @@ We evaluate FedGuard against three reference framework configurations: (1) \emph
 
 \begin{table}[htbp]
 \caption{System Performance Comparison Across Security \& Governance Baselines ($\text{Mean} \pm \text{Std Dev}$)}
-\label{tab:multi_baseline}
 \begin{center}
 \resizebox{\columnwidth}{!}{%
-\small
-\renewcommand{\arraystretch}{1.15}
-\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Framework Configuration} & \textbf{Round (s)} & \textbf{RAM (MB)} & \textbf{Payload (MB)} & \textbf{Top-1 Acc (\%)} \\
+\textbf{Framework Configuration} & \textbf{Mean Round Time (s)} & \textbf{Peak RAM (MB)} & \textbf{Payload / Round (MB)} & \textbf{Top-1 Acc (\%)} \\
 \hline
 Vanilla FedAvg & 14.20 $\pm$ 0.12 & 412.5 $\pm$ 3.2 & 44.7 $\pm$ 0.1 & 84.60 $\pm$ 0.35 \\
 SecAgg-FedAvg & 14.85 $\pm$ 0.18 & 428.1 $\pm$ 4.1 & 46.2 $\pm$ 0.2 & 84.58 $\pm$ 0.38 \\
@@ -128,6 +118,7 @@ DP-FedAvg & 14.52 $\pm$ 0.14 & 420.4 $\pm$ 3.5 & 44.8 $\pm$ 0.1 & 82.10 $\pm$ 0.
 \hline
 \end{tabular}%
 }
+\label{tab:multi_baseline}
 \end{center}
 \end{table}
 
@@ -151,12 +142,8 @@ We evaluate system robustness in \texttt{BYZANTINE\_RESILIENT} mode under active
 
 \begin{table}[htbp]
 \caption{Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname{Dir}(\alpha=0.5)$)}
-\label{tab:byzantine_sensitivity}
 \begin{center}
 \resizebox{\columnwidth}{!}{%
-\small
-\renewcommand{\arraystretch}{1.15}
-\setlength{\tabcolsep}{3pt}
 \begin{tabular}{|l|c|c|c|c|c|}
 \hline
 \textbf{Aggregation Rule} & \textbf{$f = 0\%$} & \textbf{$f = 10\%$} & \textbf{$f = 20\%$} & \textbf{$f = 30\%$} & \textbf{$f = 40\%$} \\
@@ -168,6 +155,7 @@ Coordinate Median & 83.10 $\pm$ 0.40 & 82.40 $\pm$ 0.42 & 81.60 $\pm$ 0.48 & 78.
 \hline
 \end{tabular}%
 }
+\label{tab:byzantine_sensitivity}
 \end{center}
 \end{table}
 

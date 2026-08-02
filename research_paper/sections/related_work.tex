@@ -39,14 +39,11 @@ Table~\ref{tab:framework_comparison} presents a comprehensive comparative taxono
 
 \begin{table*}[htbp]
 \caption{Comparative Taxonomy of Federated Learning Frameworks and Governance Capabilities}
-\label{tab:framework_comparison}
 \begin{center}
-\small
-\renewcommand{\arraystretch}{1.2}
-\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{|l|c|c|c|c|c|c|c|c|}
 \hline
-\textbf{Feature / Capability} & \textbf{Flower} & \textbf{NV-FLARE} & \textbf{TFF} & \textbf{OpenFL} & \textbf{FedML} & \textbf{FATE} & \textbf{PySyft} & \textbf{FedGuard (Ours)} \\
+\textbf{Feature / Capability} & \textbf{Flower} & \textbf{NVIDIA FLARE} & \textbf{TFF} & \textbf{OpenFL} & \textbf{FedML} & \textbf{FATE} & \textbf{PySyft} & \textbf{FedGuard (Ours)} \\
 \hline
 Framework-Agnostic Control Plane Decoupling & No & No & No & No & No & No & No & \textbf{Yes} \\
 Automated Statutory Compliance Engine (HIPAA/GDPR) & No & No & No & No & No & No & No & \textbf{Yes} \\
@@ -58,7 +55,9 @@ Dual Security Mode Formalization (SecAgg vs Byzantine) & No & No & No & No & No 
 GDPR Article 17 Eviction + Machine Unlearning Trigger & No & No & No & No & No & No & No & \textbf{Yes} \\
 Tamper-Evident SHA-256 Hash-Chained Audit Ledger & No & File Log & No & File Log & No & File Log & Audit Log & \textbf{Yes} \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
+\label{tab:framework_comparison}
 \end{center}
 \end{table*}
 

@@ -86,12 +86,9 @@ Conclave incorporates an automated compliance engine that maps host validation c
 
 \begin{table}[htbp]
 \caption{Statutory Regulatory Compliance Mapping in FedGuard}
-\label{tab:compliance_mapping}
 \begin{center}
-\small
-\renewcommand{\arraystretch}{1.2}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{|l|p{2.2cm}|p{3.2cm}|}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|p{3.2cm}|p{4.2cm}|}
 \hline
 \textbf{Regulation} & \textbf{Statutory Mandate} & \textbf{FedGuard Verification Mechanism} \\
 \hline
@@ -103,7 +100,9 @@ GDPR & Article 7 Consent Management & Dynamic Participant Consent Checks \\
 GDPR & Article 17 Right to Erasure & Node Eviction + Machine Unlearning Trigger \\
 GDPR & Article 32 Security of Processing & Hardware TPM 2.0 / TEE Remote Attestation \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
+\label{tab:compliance_mapping}
 \end{center}
 \end{table}
 
