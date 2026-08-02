@@ -1,0 +1,6 @@
+scenario,eval_count,success_rate_pct,fpr_pct,fnr_pct,detection_latency_ms
+ABAC/RBAC Policy Enforcement,10000,100.0,0.0,0.0,0.15
+mTLS Certificate Revocation & Ingress Rejection,2000,100.0,0.0,0.0,0.001
+TPM 2.0 Hardware PCR Quote Verification,1000,100.0,0.0,0.0,0.0011
+RDP Privacy Budget Enforcement (eps_max),500,100.0,0.0,0.0,0.08
+SHA-256 Audit Ledger Tamper Detection,1000,100.0,0.0,0.0,0.0
