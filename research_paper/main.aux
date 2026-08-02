@@ -27,13 +27,9 @@
 \citation{bonawitz2017practical,so2021lightsecagg}
 \citation{mironov2017renyi}
 \citation{blanchard2017machine,yin2018byzantine}
-\citation{bonawitz2017practical}
-\citation{mironov2017renyi}
-\citation{mo2021ppfl}
-\citation{blanchard2017machine,yin2018byzantine}
-\citation{beutel2020flower}
 \citation{hipaa2003security}
 \citation{gdpr2016regulation}
+\citation{beutel2020flower}
 \citation{liu2021federaser}
 \citation{beutel2020flower}
 \citation{roth2022nvidia}
@@ -42,16 +38,16 @@
 \citation{he2020fedml}
 \citation{yang2019fate}
 \citation{ryffel2018generic}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-B}}Proposed Solution: FedGuard and Conclave}{2}{subsection.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-C}}Summary of Key Contributions}{2}{subsection.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-D}}Paper Organization}{2}{subsection.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work \& Comparative Taxonomy}{2}{section.2}\protected@file@percent }
-\newlabel{sec:related_work}{{II}{2}{Related Work \& Comparative Taxonomy}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Federated Learning Frameworks and Enterprise Platforms}{2}{subsection.2.1}\protected@file@percent }
 \citation{zhu2019deep,geiping2020inverting}
 \citation{bonawitz2017practical}
 \citation{bell2020secagg}
 \citation{so2021lightsecagg}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-B}}Proposed Solution: FedGuard and Conclave}{2}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-C}}Summary of Core Technical Contributions}{2}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {I-D}}Paper Organization}{2}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work \& Comparative Taxonomy}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related_work}{{II}{2}{Related Work \& Comparative Taxonomy}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Federated Learning Frameworks and Enterprise Platforms}{2}{subsection.2.1}\protected@file@percent }
 \citation{dwork2014algorithmic,shokri2017membership}
 \citation{mironov2017renyi}
 \citation{balle2020hypothesis}
@@ -73,70 +69,71 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-G}}Summary of Identified Research Gaps}{3}{subsection.2.7}\protected@file@percent }
 \citation{mo2021ppfl}
 \citation{fang2020local}
-\citation{bonawitz2017practical}
 \@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparative Taxonomy of Federated Learning Frameworks and Governance Capabilities}}{4}{table.1}\protected@file@percent }
 \newlabel{tab:framework_comparison}{{I}{4}{Comparative Taxonomy of Federated Learning Frameworks and Governance Capabilities}{table.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {III}FedGuard System Architecture \& Control Plane Design}{4}{section.3}\protected@file@percent }
 \newlabel{sec:architecture}{{III}{4}{FedGuard System Architecture \& Control Plane Design}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}System Topology and Trust Boundaries}{4}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-A}1}Hardware Root-of-Trust Assumptions}{4}{subsubsection.3.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Formal Threat Model and Adversarial Taxonomies}{4}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-B}1}1. Byzantine Client Coalition ($\mathcal  {A}_{\text  {client}}$)}{4}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-B}2}2. Eavesdropping \& Colluding Coalition ($\mathcal  {A}_{\text  {collusion}}$)}{4}{subsubsection.3.2.2}\protected@file@percent }
-\citation{zhu2019deep,geiping2020inverting}
-\citation{shokri2017membership}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Formal Governance State Machine Model}{4}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}System Topology and Trust Boundaries}{4}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-B}1}Hardware Root-of-Trust Assumptions}{4}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Formal Threat Model and Adversarial Taxonomies}{4}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-C}1}1. Byzantine Client Coalition ($\mathcal  {A}_{\text  {client}}$)}{4}{subsubsection.3.3.1}\protected@file@percent }
+\citation{bonawitz2017practical}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces System Architecture of the FedGuard Governance Control Plane and Conclave Reference Implementation. The architecture establishes a 4-layer operational hierarchy: (1) \emph  {Participant Node Layer} with mTLS 1.3 authentication and TPM 2.0 PCR hardware attestation; (2) \emph  {FedGuard Governance Control Plane} enforcing ABAC/RBAC policy rules, R\'enyi Differential Privacy (RDP) accounting ($\epsilon _t, \delta _t$), mode selection (\texttt  {SECURE\_AGGREGATION} vs. \texttt  {BYZANTINE\_RESILIENT}), and GDPR Article 17 unlearning triggers; (3) \emph  {Cryptographic Execution \& Robust Aggregation Layer} managing fixed-point quantization, pairwise X25519 Diffie-Hellman masking, Shamir secret share reconstruction ($k$-of-$N$), Gaussian noise injection, and robust aggregators (Trimmed Mean, Median, Krum); and (4) \emph  {Immutable Storage \& Verification Layer} providing SHA-256 hash-chained audit ledgers ($H_k = \operatorname  {SHA-256}(H_{k-1} \| E_k)$) and \texttt  {FedEraser} checkpoint purification stores.}}{5}{figure.1}\protected@file@percent }
 \newlabel{fig:fedguard_architecture}{{1}{5}{System Architecture of the FedGuard Governance Control Plane and Conclave Reference Implementation. The architecture establishes a 4-layer operational hierarchy: (1) \emph {Participant Node Layer} with mTLS 1.3 authentication and TPM 2.0 PCR hardware attestation; (2) \emph {FedGuard Governance Control Plane} enforcing ABAC/RBAC policy rules, R\'enyi Differential Privacy (RDP) accounting ($\epsilon _t, \delta _t$), mode selection (\texttt {SECURE\_AGGREGATION} vs. \texttt {BYZANTINE\_RESILIENT}), and GDPR Article 17 unlearning triggers; (3) \emph {Cryptographic Execution \& Robust Aggregation Layer} managing fixed-point quantization, pairwise X25519 Diffie-Hellman masking, Shamir secret share reconstruction ($k$-of-$N$), Gaussian noise injection, and robust aggregators (Trimmed Mean, Median, Krum); and (4) \emph {Immutable Storage \& Verification Layer} providing SHA-256 hash-chained audit ledgers ($H_k = \operatorname {SHA-256}(H_{k-1} \| E_k)$) and \texttt {FedEraser} checkpoint purification stores}{figure.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-B}3}3. Curious-to-Active Malicious Aggregator ($\mathcal  {A}_{\text  {server}}$)}{5}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-C}2}2. Eavesdropping \& Colluding Coalition ($\mathcal  {A}_{\text  {collusion}}$)}{5}{subsubsection.3.3.2}\protected@file@percent }
+\citation{zhu2019deep,geiping2020inverting}
+\citation{shokri2017membership}
 \citation{mo2021ppfl}
 \citation{hipaa2003security}
 \citation{gdpr2016regulation}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-B}4}4. Insider Threats and Privilege Escalation ($\mathcal  {A}_{\text  {insider}}$)}{6}{subsubsection.3.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-B}5}5. Untrusted Network Adversary ($\mathcal  {A}_{\text  {network}}$)}{6}{subsubsection.3.2.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Decoupled Control Plane Architecture and Governance Modes}{6}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Hardware Root-of-Trust Identity Verification and Access Control}{6}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Automated Regulatory Compliance Engine \& Machine Unlearning}{6}{subsection.3.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Statutory Regulatory Compliance Mapping in FedGuard}}{6}{table.2}\protected@file@percent }
-\newlabel{tab:compliance_mapping}{{II}{6}{Statutory Regulatory Compliance Mapping in FedGuard}{table.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-C}3}3. Curious-to-Active Malicious Aggregator ($\mathcal  {A}_{\text  {server}}$)}{6}{subsubsection.3.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-C}4}4. Insider Threats and Privilege Escalation ($\mathcal  {A}_{\text  {insider}}$)}{6}{subsubsection.3.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {III-C}5}5. Untrusted Network Adversary ($\mathcal  {A}_{\text  {network}}$)}{6}{subsubsection.3.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Decoupled Control Plane Architecture and Governance Modes}{6}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Hardware Root-of-Trust Identity Verification and Access Control}{6}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-F}}Automated Regulatory Compliance Engine \& Machine Unlearning}{6}{subsection.3.6}\protected@file@percent }
 \citation{liu2021federaser}
 \citation{bonawitz2017practical,so2021lightsecagg}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-F}}Tamper-Evident SHA-256 Audit Ledger}{7}{subsection.3.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Statutory Regulatory Compliance Mapping in FedGuard}}{7}{table.2}\protected@file@percent }
+\newlabel{tab:compliance_mapping}{{II}{7}{Statutory Regulatory Compliance Mapping in FedGuard}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-G}}Tamper-Evident SHA-256 Audit Ledger}{7}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Cryptographic Security \& Privacy Protocols}{7}{section.4}\protected@file@percent }
+\newlabel{sec:crypto_privacy}{{IV}{7}{Cryptographic Security \& Privacy Protocols}{section.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Audit ledger event append throughput as a function of cumulative logged events, demonstrating sub-millisecond append latency and sustained linear scalability.}}{7}{figure.2}\protected@file@percent }
 \newlabel{fig:audit_ledger_throughput}{{2}{7}{Audit ledger event append throughput as a function of cumulative logged events, demonstrating sub-millisecond append latency and sustained linear scalability}{figure.2}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Cryptographic verification time for the full SHA-256 audit hash chain, confirming rapid verification performance even for large-scale enterprise training runs.}}{7}{figure.3}\protected@file@percent }
 \newlabel{fig:audit_ledger_verification}{{3}{7}{Cryptographic verification time for the full SHA-256 audit hash chain, confirming rapid verification performance even for large-scale enterprise training runs}{figure.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Cryptographic Security \& Privacy Protocols}{7}{section.4}\protected@file@percent }
-\newlabel{sec:crypto_privacy}{{IV}{7}{Cryptographic Security \& Privacy Protocols}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Threshold Secure Aggregation Protocol (\texttt  {SECURE\_AGGREGATION} Mode)}{7}{subsection.4.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-A}1}Key Agreement and Mask Generation}{7}{subsubsection.4.1.1}\protected@file@percent }
 \citation{bonawitz2017practical}
 \citation{zhu2019deep,shokri2017membership}
 \citation{abadi2016deep,mironov2017renyi}
 \citation{balle2020hypothesis}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-A}2}Shamir Threshold Dropout Recovery}{8}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Formal Privacy Accounting via R\'enyi Differential Privacy}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Execution latency of threshold Secure Aggregation as a function of model parameter dimension, demonstrating efficient key agreement and masking performance.}}{8}{figure.4}\protected@file@percent }
+\newlabel{fig:secagg_overhead}{{4}{8}{Execution latency of threshold Secure Aggregation as a function of model parameter dimension, demonstrating efficient key agreement and masking performance}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}1}Gradient Clipping and Noise Addition}{8}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}2}RDP Privacy Budget Composition}{8}{subsubsection.4.2.2}\protected@file@percent }
 \citation{fang2020local}
 \citation{hsu2019measuring,li2020federated}
 \citation{yin2018byzantine}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-A}2}Shamir Threshold Dropout Recovery}{8}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Execution latency of threshold Secure Aggregation as a function of model parameter dimension, demonstrating efficient key agreement and masking performance.}}{8}{figure.4}\protected@file@percent }
-\newlabel{fig:secagg_overhead}{{4}{8}{Execution latency of threshold Secure Aggregation as a function of model parameter dimension, demonstrating efficient key agreement and masking performance}{figure.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Formal Privacy Accounting via R\'enyi Differential Privacy}{8}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}1}Gradient Clipping and Noise Addition}{8}{subsubsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {IV-B}2}RDP Privacy Budget Composition}{8}{subsubsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Byzantine-Robust Aggregation under Heterogeneous Data (\texttt  {BYZANTINE\_RESILIENT} Mode)}{8}{subsection.4.3}\protected@file@percent }
 \citation{yin2018byzantine}
 \citation{blanchard2017machine}
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Cumulative differential privacy budget consumption $(\epsilon )$ across federated training rounds for $\delta =10^{-5}, C=1.0, \sigma =0.85$, illustrating dynamic privacy threshold enforcement.}}{9}{figure.5}\protected@file@percent }
 \newlabel{fig:privacy_budget}{{5}{9}{Cumulative differential privacy budget consumption $(\epsilon )$ across federated training rounds for $\delta =10^{-5}, C=1.0, \sigma =0.85$, illustrating dynamic privacy threshold enforcement}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Byzantine-Robust Aggregation under Heterogeneous Data (\texttt  {BYZANTINE\_RESILIENT} Mode)}{9}{subsection.4.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {V}Empirical Evaluation \& Benchmarking}{9}{section.5}\protected@file@percent }
 \newlabel{sec:evaluation}{{V}{9}{Empirical Evaluation \& Benchmarking}{section.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Experimental Setup and Benchmark Methodology}{9}{subsection.5.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}1}Hardware Environment, Network Isolation, and Container Setup}{9}{subsubsection.5.1.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}2}CPU Frequency Locking and Micro-Benchmark Timing Isolation}{9}{subsubsection.5.1.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}3}Deterministic Pseudorandom Seed Protocol}{9}{subsubsection.5.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}4}Reproducibility Specification and Hyperparameter Protocol}{9}{subsubsection.5.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Control Plane Component-Wise Micro-Ablation Study}{9}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {\mbox  {V-A}4}Reproducibility Specification and Hyperparameter Protocol}{10}{subsubsection.5.1.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}}{10}{table.3}\protected@file@percent }
 \newlabel{tab:reproducibility_params}{{III}{10}{Complete Experimental Reproducibility \& Hyperparameter Protocol Specification}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Control Plane Component-Wise Micro-Ablation Study}{10}{subsection.5.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Component-Wise Execution Latency and Memory Micro-Ablation ($\text  {Mean} \pm \text  {Std Dev}$, $N_{\text  {trials}}=5$)}}{10}{table.4}\protected@file@percent }
 \newlabel{tab:component_ablation}{{IV}{10}{Component-Wise Execution Latency and Memory Micro-Ablation ($\text {Mean} \pm \text {Std Dev}$, $N_{\text {trials}}=5$)}{table.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Logarithmic execution latency breakdown of governance control plane subsystems, illustrating that cryptographic keying accounts for the primary latency while attestation, policy, and logging operate in sub-milliseconds.}}{10}{figure.6}\protected@file@percent }
@@ -145,27 +142,27 @@
 \@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces System Performance Comparison Across Security \& Governance Baselines ($\text  {Mean} \pm \text  {Std Dev}$)}}{10}{table.5}\protected@file@percent }
 \newlabel{tab:multi_baseline}{{V}{10}{System Performance Comparison Across Security \& Governance Baselines ($\text {Mean} \pm \text {Std Dev}$)}{table.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Node Scalability and Client Dropout Stress-Test}{10}{subsection.5.4}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane.}}{10}{figure.7}\protected@file@percent }
-\newlabel{fig:baseline_runtime}{{7}{10}{Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane}{figure.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane.}}{11}{figure.7}\protected@file@percent }
+\newlabel{fig:baseline_runtime}{{7}{11}{Comparative execution runtime across training rounds between ungoverned baseline and the FedGuard governance control plane}{figure.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Byzantine Adversary Sensitivity Matrix}{11}{subsection.5.5}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname  {Dir}(\alpha =0.5)$)}}{11}{table.6}\protected@file@percent }
 \newlabel{tab:byzantine_sensitivity}{{VI}{11}{Byzantine Poisoning Sensitivity Matrix: Top-1 Accuracy (\%) vs. Adversary Ratio $f$ ($\operatorname {Dir}(\alpha =0.5)$)}{table.6}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning.}}{11}{figure.8}\protected@file@percent }
 \newlabel{fig:byzantine_sensitivity}{{8}{11}{Global accuracy degradation vs. Byzantine malicious client fraction $f \in [0\%, 40\%]$, demonstrating Trimmed Mean robustness under extreme poisoning}{figure.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{11}{subsection.5.6}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt  {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives.}}{11}{figure.9}\protected@file@percent }
 \newlabel{fig:byzantine_accuracy}{{9}{11}{Global model test accuracy over training rounds under Byzantine gradient poisoning, comparing standard Federated Averaging (\texttt {FedAvg}) against FedGuard with Byzantine-robust aggregation primitives}{figure.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Regulatory Compliance and GDPR Article 17 Machine Unlearning Study}{11}{subsection.5.6}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery.}}{11}{figure.10}\protected@file@percent }
 \newlabel{fig:gdpr_revocation}{{10}{11}{Global model test accuracy and loss trajectory during a dynamic GDPR Article 17 client revocation and machine unlearning event at Round 10, showing rapid post-unlearning accuracy recovery}{figure.10}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Deep Learning Workload Scalability (ResNet-18)}{11}{subsection.5.7}\protected@file@percent }
 \citation{bell2020secagg}
-\citation{so2021lightsecagg}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Deep Learning Workload Scalability (ResNet-18)}{12}{subsection.5.7}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Governance control plane latency and aggregation scaling across parameter dimensions for the PyTorch ResNet-18 deep learning architecture.}}{12}{figure.11}\protected@file@percent }
 \newlabel{fig:resnet18_workload}{{11}{12}{Governance control plane latency and aggregation scaling across parameter dimensions for the PyTorch ResNet-18 deep learning architecture}{figure.11}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-H}}Artifact \& Code Availability for Independent Reproducibility}{12}{subsection.5.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {VI}Operational Limitations \& Boundary Conditions}{12}{section.6}\protected@file@percent }
 \newlabel{sec:limitations}{{VI}{12}{Operational Limitations \& Boundary Conditions}{section.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Scalability Bottlenecks and Sub-Quadratic Mitigation Roadmap}{12}{subsection.6.1}\protected@file@percent }
+\citation{so2021lightsecagg}
 \citation{liu2021federaser}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Hardware Root-of-Trust and Attestation Prerequisites}{13}{subsection.6.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Cryptographic Computational Overhead on Massive Deep Learning Models}{13}{subsection.6.3}\protected@file@percent }
@@ -173,8 +170,8 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-E}}Privacy Masking vs. Byzantine Robustness Operational Trade-off}{13}{subsection.6.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-F}}Statutory Compliance Boundaries of Machine Unlearning}{13}{subsection.6.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-G}}Orchestrator Integration and Deployment Challenges}{13}{subsection.6.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion \& Future Work}{13}{section.7}\protected@file@percent }
-\newlabel{sec:conclusion}{{VII}{13}{Conclusion \& Future Work}{section.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion \& Future Work}{14}{section.7}\protected@file@percent }
+\newlabel{sec:conclusion}{{VII}{14}{Conclusion \& Future Work}{section.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-A}}Future Work}{14}{subsection.7.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{Appendix\nobreakspace  A: Formal Cryptographic Security Reduction \& Privacy Proof}{14}{section*.1}\protected@file@percent }
 \newlabel{sec:appendix_security_proof}{{A}{14}{\appendixname \nobreakspace \thesectiondis \\* Formal Cryptographic Security Reduction \& Privacy Proof}{section*.1}{}}

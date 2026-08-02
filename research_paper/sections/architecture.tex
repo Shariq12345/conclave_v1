@@ -1,7 +1,20 @@
 \section{FedGuard System Architecture \& Control Plane Design}
 \label{sec:architecture}
 
-This section presents the architectural design of \textbf{FedGuard} alongside its reference implementation, \textbf{Conclave}. FedGuard incorporates an independent control plane enforcing identity verification, compliance validation, access control, and auditability without altering the core operations of the underlying FL framework.
+This section presents the formal governance model and system architecture of \textbf{FedGuard} alongside its reference implementation, \textbf{Conclave}.
+
+\subsection{Formal Governance State Machine Model}
+
+We formalize FedGuard as a tuple $\mathcal{M}_{\text{gov}} = (\mathcal{S}, \Sigma, \delta, s_0, \mathcal{P})$, where:
+\begin{itemize}
+    \item $\mathcal{S} = \{S_{\text{IDLE}}, S_{\text{ATTEST}}, S_{\text{AUTH}}, S_{\text{TRAIN}}, S_{\text{REVOKED}}\}$ denotes the set of system operational states.
+    \item $\Sigma$ is the alphabet of governance lifecycle events (e.g., certificate presentation, TPM PCR quote measurement, RDP budget check, GDPR revocation request).
+    \item $\delta: \mathcal{S} \times \Sigma \to \mathcal{S}$ is the state transition function governed by policy rules.
+    \item $s_0 = S_{\text{IDLE}}$ is the initial unauthenticated state.
+    \item $\mathcal{P} = \{P_{\text{HIPAA}}, P_{\text{GDPR}}\}$ is the set of executable policy rules evaluating access predicates $\phi_i(u) \in \{0, 1\}$ before permitting state transitions.
+\end{itemize}
+
+A transition $s_t \xrightarrow{\sigma_t} s_{t+1}$ executes if and only if all policy predicates $\bigwedge_{i} \phi_i(u) = 1$. Any predicate failure triggers immediate transition to $S_{\text{REVOKED}}$ and appends a record to the audit ledger.
 
 \begin{figure*}[t!]
 \centerline{\includegraphics[width=\textwidth]{figures/fig_fedguard_architecture.pdf}}

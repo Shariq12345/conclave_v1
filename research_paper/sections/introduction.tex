@@ -27,17 +27,16 @@ To evaluate our proposed architecture, we implement \textbf{Conclave}, a referen
     \item \textbf{Byzantine Resilience under Non-IID Data:} Integration of robust aggregators (Trimmed Mean, Median, Krum~\cite{blanchard2017machine, yin2018byzantine}) under Dirichlet non-IID partitioning ($\alpha=0.5$) for PyTorch ResNet-18 workloads.
 \end{itemize}
 
-Crucially, we do not claim novelty in individual mathematical or cryptographic primitives—such as ECDH key exchange~\cite{bonawitz2017practical}, Shamir secret sharing, RDP~\cite{mironov2017renyi}, TPM attestation~\cite{mo2021ppfl}, or robust aggregators~\cite{blanchard2017machine, yin2018byzantine}. Rather, our contribution lies in the architectural design, formalization, and evaluation of a unified control plane (FedGuard) that orchestrates these established mechanisms under automated policy rules.
+\subsection{Summary of Core Technical Contributions}
 
-\subsection{Summary of Key Contributions}
+Rather than viewing governance as an ad-hoc wrapper, this paper formalizes the governing principles of enterprise federated learning into a unified control plane model. The primary technical contributions of this work are:
 
-The primary contributions of this work are:
 \begin{itemize}
-    \item \textbf{Decoupled Control Plane Architecture:} We propose FedGuard, a governance control plane that orchestrates security and privacy primitives under a unified policy framework, decoupling compliance enforcement from underlying ML execution engines (e.g., Flower~\cite{beutel2020flower}).
-    \item \textbf{Statutory Policy Mapping Engine:} We design an automated compliance engine mapping security mechanisms (mTLS 1.3, TPM 2.0 / TEE attestation, RDP accountants) to statutory mandates for U.S. HIPAA (\S164.312)~\cite{hipaa2003security} and EU GDPR (Articles 5, 7, 17, 32)~\cite{gdpr2016regulation}.
-    \item \textbf{Resolution of Protocol Incompatibilities:} We resolve the operational conflict between Secure Aggregation tensor masking and Byzantine distance metrics by formalizing dynamic governance mode negotiation (\texttt{SECURE\_AGGREGATION} vs. \texttt{BYZANTINE\_RESILIENT}) with hash-chained audit logging.
-    \item \textbf{Compliance-Driven Workflow Orchestration:} We operationalize GDPR Article 17 (Right to Erasure) by pairing client credential eviction with automated machine unlearning (\texttt{FedEraser} checkpoint purification~\cite{liu2021federaser}).
-    \item \textbf{Reference Implementation \& Benchmarking:} We present Conclave, a prototype reference implementation integrated with Flower, evaluating deep learning workloads (ResNet-18 on non-IID CIFAR-10) to demonstrate that governance orchestration imposes only 7.2\% runtime overhead.
+    \item \textbf{Formal Policy-Driven Governance Model:} We formalize a state-machine driven governance model ($\mathcal{M}_{\text{gov}}$) for federated learning that programmatically maps statutory mandates (U.S. HIPAA \S164.312~\cite{hipaa2003security} and EU GDPR Articles 5, 7, 17, 32~\cite{gdpr2016regulation}) to verifiable access control predicates, identity attestation quotes, and budget invariants.
+    \item \textbf{Framework-Agnostic Policy-Aware Orchestration Architecture:} We propose FedGuard, a policy-aware control plane architecture that intercepts lifecycle events via standardized hook abstractions, decoupling regulatory governance evaluation from FL execution engines (e.g., Flower~\cite{beutel2020flower}).
+    \item \textbf{Resolution of Protocol Incompatibility via Dynamic Mode Negotiation:} We identify and resolve the fundamental protocol conflict between cryptographic Secure Aggregation tensor masking and coordinate-wise Byzantine distance metrics by formalizing dynamic governance mode negotiation (\texttt{SECURE\_AGGREGATION} vs. \texttt{BYZANTINE\_RESILIENT}) with hash-chained audit logging.
+    \item \textbf{Compliance-Driven Unlearning Orchestration:} We operationalize GDPR Article 17 (Right to Erasure) by pairing real-time client credential eviction with automated machine unlearning (\texttt{FedEraser} checkpoint purification~\cite{liu2021federaser}).
+    \item \textbf{Reference Implementation \& Empirical Benchmarking:} We present Conclave, a reference implementation integrated with Flower, evaluating deep learning workloads (ResNet-18 on non-IID CIFAR-10) to demonstrate that end-to-end governance orchestration imposes only 7.2\% runtime overhead.
 \end{itemize}
 
 \subsection{Paper Organization}
