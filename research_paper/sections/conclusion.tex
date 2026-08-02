@@ -3,7 +3,7 @@
 
 This paper presents \textbf{FedGuard}, a policy-driven governance control plane designed to bridge the operational gap between privacy-preserving distributed machine learning and statutory enterprise compliance. By decoupling governance enforcement from FL model execution, FedGuard introduces cryptographically verifiable identity management, automated compliance mapping to international statutory regulations (HIPAA and GDPR), and tamper-evident audit logging without altering underlying aggregation pipelines.
 
-We evaluated FedGuard via \textbf{Conclave}, a production-grade reference implementation integrated with the Flower FL framework. The empirical results demonstrate that:
+We evaluated FedGuard via \textbf{Conclave}, a prototype reference implementation integrated with the Flower FL framework. The empirical results demonstrate that:
 \begin{itemize}
     \item \textbf{Minimal Operational Overhead:} FedGuard introduces an average execution latency overhead of only 7.2\% compared to ungoverned FL baselines while processing multi-million parameter deep learning workloads (PyTorch ResNet-18).
     \item \textbf{High-Throughput Audit Integrity:} The SHA-256 hash-chained audit ledger achieves sub-millisecond event append latency and rapid full-chain integrity verification.

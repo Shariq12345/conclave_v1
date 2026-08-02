@@ -8,7 +8,7 @@ This section presents an exhaustive quantitative evaluation of FedGuard. To sati
 \subsubsection{Hardware Environment and Deep Learning Workload}
 All experiments were conducted on a commodity benchmark host equipped with an 8-Core x86\_64 Processor (2.4 GHz base clock), 16 GB System Memory, running Python 3.12.2 under Windows 11 / Linux x86\_64. Client nodes operate as isolated Python processes communicating over TLS 1.3 encrypted channels.
 
-To benchmark real-world performance on complex vision workloads, we deploy a production-grade PyTorch deep learning pipeline:
+To benchmark real-world performance on complex vision workloads, we deploy an experimental PyTorch deep learning pipeline:
 \begin{itemize}
     \item \textbf{Model Architecture:} ResNet-18 convolutional neural network containing 11.17 million trainable parameters ($d \approx 11.17 \times 10^6$).
     \item \textbf{Dataset \& Partitioning:} CIFAR-10 dataset partitioned deterministically across nodes using a Dirichlet distribution $\operatorname{Dir}(\alpha=0.5)$ to model realistic non-IID statistical heterogeneity, as well as extreme skew $\operatorname{Dir}(\alpha=0.1)$.
