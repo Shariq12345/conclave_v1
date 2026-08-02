@@ -1,14 +1,14 @@
 \section{Conclusion \& Future Work}
 \label{sec:conclusion}
 
-This paper presents \textbf{FedGuard}, a policy-driven governance control plane designed to align privacy-preserving distributed machine learning with statutory enterprise compliance. By decoupling governance enforcement from FL model execution, FedGuard integrates cryptographically verifiable identity management, automated compliance mapping to international statutory regulations (HIPAA and GDPR), and tamper-evident audit logging without altering underlying aggregation pipelines.
+This paper presents \textbf{FedGuard}, a control plane aligning distributed machine learning with enterprise regulatory compliance. By decoupling governance enforcement from model execution, FedGuard integrates verifiable identity management, automated compliance mapping (HIPAA, GDPR), and hash-chained audit logging without altering aggregation pipelines.
 
-We evaluated FedGuard via \textbf{Conclave}, a prototype reference implementation integrated with the Flower FL framework. The empirical results demonstrate that:
+We evaluated FedGuard via \textbf{Conclave}, a reference implementation integrated with Flower. Empirical results demonstrate:
 \begin{itemize}
-    \item \textbf{Minimal Operational Overhead:} FedGuard introduces an average execution latency overhead of only 7.2\% compared to ungoverned FL baselines while processing multi-million parameter deep learning workloads (PyTorch ResNet-18).
-    \item \textbf{High-Throughput Audit Integrity:} The SHA-256 hash-chained audit ledger achieves sub-millisecond event append latency and rapid full-chain integrity verification.
-    \item \textbf{Adversarial Robustness:} Under non-IID statistical heterogeneity ($\operatorname{Dir}(\alpha=0.5)$) and 20\% Byzantine gradient poisoning attacks, FedGuard's robust aggregation primitives preserve a top-1 test accuracy of 82.4\%, preserving model convergence under adversarial attacks.
-    \item \textbf{Statutory Compliance Enforcement:} Real-time participant revocation under GDPR Article 17 (Right to Erasure) completes credential eviction and state isolation in under 120 ms, with model accuracy recovering within 2 training rounds.
+    \item \textbf{Minimal Overhead:} FedGuard introduces an average latency overhead of only 7.2\% compared to ungoverned FL baselines on PyTorch ResNet-18 workloads.
+    \item \textbf{High-Throughput Audit Integrity:} The SHA-256 hash-chained audit ledger achieves sub-millisecond event append latency and rapid chain verification.
+    \item \textbf{Adversarial Robustness:} Under non-IID data ($\operatorname{Dir}(\alpha=0.5)$) and 20\% Byzantine gradient poisoning, FedGuard preserves 82.4\% test accuracy.
+    \item \textbf{Regulatory Revocation:} Real-time participant revocation under GDPR Article 17 completes credential eviction in under 120 ms, with model accuracy recovering within 2 rounds.
 \end{itemize}
 
 \subsection{Future Work}
