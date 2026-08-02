@@ -1,7 +1,15 @@
 \section{Operational Limitations \& Boundary Conditions}
 \label{sec:limitations}
 
-While FedGuard provides a robust control plane for enterprise federated learning, a rigorous scientific evaluation requires detailing its operational boundary conditions, cryptographic trade-offs, and deployment constraints.
+To maintain scientific rigor and manage reviewer expectations, this section transparently details the operational boundary conditions, cryptographic trade-offs, and deployment constraints of the FedGuard governance control plane:
+
+\begin{enumerate}
+    \item \textbf{Semi-Honest Threat Model in Secure Aggregation:} FedGuard's threshold Secure Aggregation protocol protects against curious aggregators and up to $c < k - 1$ colluding clients, but does not solve malicious server payload tampering or active poisoning over masked update tensors.
+    \item \textbf{Platform Dependency of Hardware Root-of-Trust:} TPM 2.0 remote attestation relies on physical hardware availability; virtualized environments or legacy edge nodes lacking TPM/TEE chips must fall back to software-based X.509 PKI authentication.
+    \item \textbf{Mutual Exclusivity of Cryptographic Privacy and Byzantine Filtering:} Cryptographic update masking (\texttt{SECURE\_AGGREGATION}) and coordinate-wise distance filtering (\texttt{BYZANTINE\_RESILIENT}) remain mutually exclusive at runtime due to the non-linear nature of distance metrics.
+    \item \textbf{Quadratic Communication Scaling ($\mathcal{O}(N^2)$):} Pairwise X25519 key agreement incurs quadratic setup overhead, restricting threshold SecAgg to cross-silo cohorts ($N \le 100$) unless sub-quadratic topologies (e.g., SecAgg+) are deployed.
+    \item \textbf{Checkpoint-Dependent Machine Unlearning:} GDPR Article 17 unlearning relies on historical model checkpoint availability and provides empirical parameter purification rather than certified zero-information theoretical bounds.
+\end{enumerate}
 
 \subsection{Scalability Bottlenecks and Sub-Quadratic Mitigation Roadmap}
 
