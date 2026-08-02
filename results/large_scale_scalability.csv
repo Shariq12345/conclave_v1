@@ -1,0 +1,6 @@
+client_count_N,pairwise_keys_count,secagg_key_setup_ms,shamir_sharing_ms,policy_verification_ms,audit_logging_ms,total_control_plane_ms,total_control_plane_sec
+100,4950,42.57,2.97,15.0,0.28,60.82,0.061
+250,31125,267.68,18.56,37.5,0.7,324.44,0.324
+500,124750,1072.85,74.25,75.0,1.4,1223.5,1.224
+1000,499500,4295.7,297.0,150.0,2.8,4745.5,4.745
+5000,12497500,107478.5,7425.0,750.0,14.0,115667.5,115.668

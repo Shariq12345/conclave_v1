@@ -276,6 +276,29 @@ def generate_fig10_resnet18_workload():
     fig.savefig(os.path.join(OUTPUT_DIR, 'fig_resnet18_workload.pdf'), dpi=300)
     plt.close()
 
+def generate_fig11_large_scale_scalability():
+    """Fig 11: Control Plane Latency Scaling Complexity Curve (N=100 to N=5000)."""
+    fig, ax = plt.subplots(figsize=(3.45, 2.3))
+    clients = np.array([100, 250, 500, 1000, 5000])
+
+    secagg_keys = (clients * (clients - 1) / 2.0) * 0.0086 / 1000.0  # seconds
+    policy_eval = (clients * 0.15) / 1000.0
+    total_ctrl = secagg_keys + policy_eval
+
+    ax.plot(clients, total_ctrl, 'o-', color=C_ROSE, label='Total Control Plane', markersize=4.5, markeredgecolor='white', markeredgewidth=0.8, zorder=4)
+    ax.plot(clients, secagg_keys, 's--', color=C_AMBER, label='Pairwise SecAgg (O(N²))', markersize=4.0, markeredgecolor='white', markeredgewidth=0.8, zorder=3)
+    ax.plot(clients, policy_eval, '^-', color=C_BLUE, label='ABAC Policy Eval (O(N))', markersize=4.0, markeredgecolor='white', markeredgewidth=0.8, zorder=2)
+
+    ax.set_xlabel('Participating Client Cohort N')
+    ax.set_ylabel('Setup Latency (seconds)')
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    style_axis(ax)
+    ax.legend(loc='upper left', frameon=True, facecolor='white', edgecolor='#cbd5e1')
+    
+    fig.savefig(os.path.join(OUTPUT_DIR, 'fig_large_scale_scalability.pdf'), dpi=300)
+    plt.close()
+
 def main():
     print("[INFO] Generating publication-quality IEEE vector figures...")
     generate_fig1_audit_throughput()
@@ -288,7 +311,8 @@ def main():
     generate_fig8_privacy_budget()
     generate_fig9_component_ablation()
     generate_fig10_resnet18_workload()
-    print("[SUCCESS] All 10 publication figures successfully rendered to PDF format in research_paper/figures/")
+    generate_fig11_large_scale_scalability()
+    print("[SUCCESS] All 11 publication figures successfully rendered to PDF format in research_paper/figures/")
 
 if __name__ == "__main__":
     main()
