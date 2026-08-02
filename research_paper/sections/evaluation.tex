@@ -1,7 +1,7 @@
 \section{Empirical Evaluation \& Benchmarking}
 \label{sec:evaluation}
 
-This section presents an exhaustive quantitative evaluation of FedGuard. To satisfy IEEE Transactions empirical standards, we evaluate: (1) control plane component-wise micro-ablation latency across 5 independent random seeds, (2) multi-baseline performance comparisons against standalone security primitives, (3) node scalability and client dropout resilience up to $N=100$ nodes, (4) Byzantine adversary sensitivity across varying poisoning fractions under Dirichlet non-IID statistical heterogeneity, and (5) dynamic GDPR Article 17 regulatory compliance and machine unlearning performance.
+This section presents a quantitative evaluation of FedGuard. To satisfy IEEE Transactions empirical standards, we evaluate: (1) control plane component-wise micro-ablation latency across 5 independent random seeds, (2) multi-baseline performance comparisons against standalone security primitives, (3) node scalability and client dropout resilience up to $N=100$ nodes, (4) Byzantine adversary sensitivity across varying poisoning fractions under Dirichlet non-IID statistical heterogeneity, and (5) dynamic GDPR Article 17 regulatory compliance and machine unlearning performance.
 
 \subsection{Experimental Setup and Benchmark Methodology}
 
@@ -124,7 +124,7 @@ DP-FedAvg & 14.52 $\pm$ 0.14 & 420.4 $\pm$ 3.5 & 44.8 $\pm$ 0.1 & 82.10 $\pm$ 0.
 \end{center}
 \end{table}
 
-The empirical results in Table~\ref{tab:multi_baseline} demonstrate that FedGuard imposes an overall runtime overhead of only 7.18\% over Vanilla FedAvg ($15.22$ s vs. $14.20$ s), while providing comprehensive mTLS identity validation, TPM 2.0 remote attestation, ABAC policy enforcement, threshold SecAgg, RDP privacy accounting, and SHA-256 audit hash chaining.
+The empirical results in Table~\ref{tab:multi_baseline} demonstrate that FedGuard imposes an overall runtime overhead of only 7.18\% over Vanilla FedAvg ($15.22$ s vs. $14.20$ s), while integrating mTLS identity validation, TPM 2.0 remote attestation, ABAC policy enforcement, threshold SecAgg, RDP privacy accounting, and SHA-256 audit hash chaining.
 
 \subsection{Node Scalability and Client Dropout Stress-Test}
 

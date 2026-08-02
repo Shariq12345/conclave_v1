@@ -13,7 +13,7 @@ However, existing platforms exhibit structural limitations when deployed in ente
 
 Cryptographic Secure Aggregation (SecAgg) prevents semi-honest parameter servers from inspecting individual client weight updates by adding zero-sum pairwise masks. Unmasked updates expose local model parameters to gradient inversion attacks that can reconstruct original training images or text tokens~\cite{zhu2019deep, geiping2020inverting}. Since the foundational threshold SecAgg protocol proposed by Bonawitz et al.~\cite{bonawitz2017practical}, recent work has focused on reducing communication and computation overhead. Variants such as SecAgg+~\cite{bell2020secagg} and LightSecAgg~\cite{so2021lightsecagg} leverage graph-based masking, secret sharing optimization, and finite-field vectorization to improve scalability under client dropouts.
 
-While these protocols significantly advance cryptographic efficiency, they treat Secure Aggregation as an isolated mathematical primitive. They lack integration with higher-level enterprise identity mechanisms, automated policy checks, or dynamic session governance. \textit{FedGuard bridges this gap by integrating X25519 Elliptic Curve Diffie-Hellman (ECDH) key agreement with Shamir's $(k, N)$-Threshold Secret Sharing directly into a policy-driven lifecycle, ensuring that ephemeral masking and dropout recovery are dynamically orchestrated based on validated compliance policies.}
+While these protocols significantly advance cryptographic efficiency, they treat Secure Aggregation as an isolated mathematical primitive. They lack integration with higher-level enterprise identity mechanisms, automated policy checks, or dynamic session governance. \textit{FedGuard addresses this limitation by integrating X25519 Elliptic Curve Diffie-Hellman (ECDH) key agreement with Shamir's $(k, N)$-Threshold Secret Sharing directly into a policy-driven lifecycle, ensuring that ephemeral masking and dropout recovery are dynamically orchestrated based on validated compliance policies.}
 
 \subsection{Differential Privacy and Formal Budget Accounting}
 
@@ -35,7 +35,7 @@ Furthermore, under GDPR Article 17 (Right to Erasure), FL systems must accommoda
 
 \subsection{Comparative Taxonomy}
 
-Table~\ref{tab:framework_comparison} presents a comprehensive comparative taxonomy evaluating FedGuard against seven mainstream FL frameworks across eight key enterprise governance and security capabilities.
+Table~\ref{tab:framework_comparison} presents a comparative taxonomy evaluating FedGuard against seven mainstream FL frameworks across eight key enterprise governance and security capabilities.
 
 \begin{table*}[htbp]
 \caption{Comparative Taxonomy of Federated Learning Frameworks and Governance Capabilities}
@@ -63,7 +63,7 @@ Tamper-Evident SHA-256 Hash-Chained Audit Ledger & No & File Log & No & File Log
 
 \subsection{Summary of Identified Research Gaps}
 
-Based on our synthesis of the state-of-the-art, we identify four critical research gaps in current Federated Learning systems:
+Based on our synthesis of prior literature, we identify four critical research gaps in current Federated Learning systems:
 \begin{enumerate}
     \item \textbf{Tight Coupling of Governance and ML Execution:} Existing FL frameworks entangle security policies with training execution scripts, preventing standardized policy enforcement across heterogeneous backends.
     \item \textbf{Absence of Automated Statutory Compliance Verification:} Current systems rely on manual compliance mapping, lacking automated engines that verify hardware attestation, identity credentials, and privacy budgets against statutory mandates (HIPAA, GDPR).

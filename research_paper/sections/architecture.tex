@@ -1,7 +1,7 @@
 \section{FedGuard System Architecture \& Control Plane Design}
 \label{sec:architecture}
 
-This section presents the architectural design of \textbf{FedGuard}, a policy-driven governance framework for Federated Learning, alongside its reference implementation, \textbf{Conclave}. FedGuard introduces an independent governance control plane that enforces identity verification, compliance validation, access control, and tamper-evident auditability without altering the core mathematical operations of the underlying Federated Learning (FL) framework.
+This section presents the architectural design of \textbf{FedGuard}, a policy-driven governance framework for Federated Learning, alongside its reference implementation, \textbf{Conclave}. FedGuard incorporates an independent governance control plane that enforces identity verification, compliance validation, access control, and tamper-evident auditability without altering the core mathematical operations of the underlying Federated Learning (FL) framework.
 
 \begin{figure*}[t!]
 \centerline{\includegraphics[width=\textwidth]{figures/fig_fedguard_architecture.pdf}}
@@ -24,7 +24,7 @@ We assume that cryptographic primitives—including X25519 Elliptic Curve Diffie
 
 \subsection{Formal Threat Model and Adversarial Taxonomies}
 
-We formalize a comprehensive threat model spanning five distinct adversary classes, encompassing passive inference, active gradient poisoning, collusion, insider threats, and server tampering:
+We formalize a threat model spanning five distinct adversary classes, encompassing passive inference, active gradient poisoning, collusion, insider threats, and server tampering:
 
 \subsubsection{1. Byzantine Client Coalition ($\mathcal{A}_{\text{client}}$)}
 An active adversary controls a fraction $\alpha_{\text{byz}} = \frac{f}{N}$ of participating client nodes ($f < \lfloor \frac{N-1}{2} \rfloor$). The adversary possesses full access to the local compute environment of compromised nodes and can execute arbitrary malicious behavior:
