@@ -3,6 +3,12 @@
 
 This section presents the architectural design of \textbf{FedGuard}, a policy-driven governance framework for Federated Learning, alongside its reference implementation, \textbf{Conclave}. FedGuard introduces an independent governance control plane that enforces identity verification, compliance validation, access control, and tamper-evident auditability without altering the core mathematical operations of the underlying Federated Learning (FL) framework.
 
+\begin{figure*}[t!]
+\centerline{\includegraphics[width=\textwidth]{figures/fig_fedguard_architecture.pdf}}
+\caption{System Architecture of the FedGuard Governance Control Plane and Conclave Reference Implementation. The architecture establishes a 4-layer operational hierarchy: (1) \emph{Participant Node Layer} with mTLS 1.3 authentication and TPM 2.0 PCR hardware attestation; (2) \emph{FedGuard Governance Control Plane} enforcing ABAC/RBAC policy rules, R\'enyi Differential Privacy (RDP) accounting ($\epsilon_t, \delta_t$), mode selection (\texttt{SECURE\_AGGREGATION} vs. \texttt{BYZANTINE\_RESILIENT}), and GDPR Article 17 unlearning triggers; (3) \emph{Cryptographic Execution \& Robust Aggregation Layer} managing fixed-point quantization, pairwise X25519 Diffie-Hellman masking, Shamir secret share reconstruction ($k$-of-$N$), Gaussian noise injection, and robust aggregators (Trimmed Mean, Median, Krum); and (4) \emph{Immutable Storage \& Verification Layer} providing SHA-256 hash-chained audit ledgers ($H_k = \operatorname{SHA-256}(H_{k-1} \| E_k)$) and \texttt{FedEraser} checkpoint purification stores.}
+\label{fig:fedguard_architecture}
+\end{figure*}
+
 \subsection{System Topology and Trust Boundaries}
 
 The FedGuard architecture operates across four distinct operational entities within a multi-institutional federated learning ecosystem:
